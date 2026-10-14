@@ -8,17 +8,34 @@
   <style>
     body { font-family: system-ui, sans-serif; background: #0D1B3E; color: white; margin: 0; padding: 2rem; }
     a { color: #00B4A6; }
-    .card { background: #162447; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; }
+    .card { background: #162447; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; max-width: 600px; }
+    input, textarea { width: 100%; padding: 0.6rem; margin: 0.4rem 0; border: 1px solid #00B4A6; border-radius: 4px; background: #0D1B3E; color: white; box-sizing: border-box; }
+    button { padding: 0.6rem 1.2rem; background: #00B4A6; color: #0D1B3E; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .project-item { padding: 0.5rem 0; border-bottom: 1px solid #1E3163; }
   </style>
 </head>
 <body>
   <h1>Admin Dashboard</h1>
-  <p>You are logged in.</p>
+  <p>Welcome. You are logged in.</p>
+
   <div class="card">
-    <h2>Projects</h2>
-    <p>Manage your case studies here (coming next).</p>
+    <h2>Add New Project</h2>
+    <form id="project-form">
+      <input type="text" id="title" placeholder="Title" required>
+      <input type="text" id="client" placeholder="Client">
+      <textarea id="summary" placeholder="Summary" rows="3"></textarea>
+      <textarea id="challenge" placeholder="Challenge" rows="2"></textarea>
+      <textarea id="approach" placeholder="Approach" rows="2"></textarea>
+      <textarea id="results" placeholder="Results" rows="2"></textarea>
+      <button type="submit">Add Project</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Your Projects</h2>
     <div id="projects-list">Loading…</div>
   </div>
+
   <p><a href="#" id="logout">Log out</a></p>
 
   <script>
@@ -26,9 +43,9 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNrbmtxcXBndm1yYmphaXNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5Njc2MjQsImV4cCI6MjEwNzU0MzYyNH0.PmMgtVHLt0z9uvV5RAkmHuj33TLb_kwLdm70iu8EAnQ';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Check if logged in
-    supabaseClient.auth.getSession().then(({ data }) => {
-      if (!data.session) {
+    // Redirect to login if not authenticated
+    supabaseClient.auth.getSession().then(function(result) {
+      if (!result.data.session) {
         window.location.href = 'index.html';
       }
     });
@@ -40,20 +57,51 @@
       window.location.href = 'index.html';
     });
 
-    // Load projects (basic list)
+    // Load and display projects
     async function loadProjects() {
-      const { data, error } = await supabaseClient.from('projects').select('id, title, status').order('position');
       const list = document.getElementById('projects-list');
+      const { data, error } = await supabaseClient
+        .from('projects')
+        .select('id, title, client, status')
+        .order('position', { ascending: true });
+
       if (error) {
-        list.textContent = 'Error: ' + error.message;
+        list.textContent = 'Error loading projects: ' + error.message;
         return;
       }
       if (!data || data.length === 0) {
         list.textContent = 'No projects yet.';
         return;
       }
-      list.innerHTML = data.map(p => `<div>${p.title} (${p.status})</div>`).join('');
+      list.innerHTML = data.map(function(p) {
+        return '<div class="project-item"><strong>' + (p.title || 'Untitled') + '</strong> — ' + (p.client || '') + ' <em>(' + p.status + ')</em></div>';
+      }).join('');
     }
+
+    // Add new project
+    document.getElementById('project-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const payload = {
+        title: document.getElementById('title').value,
+        client: document.getElementById('client').value,
+        summary: document.getElementById('summary').value,
+        challenge: document.getElementById('challenge').value,
+        approach: document.getElementById('approach').value,
+        results: document.getElementById('results').value,
+        status: 'draft',
+        position: 999
+      };
+
+      const { error } = await supabaseClient.from('projects').insert(payload);
+      if (error) {
+        alert('Could not add project: ' + error.message);
+      } else {
+        alert('Project added!');
+        document.getElementById('project-form').reset();
+        loadProjects();
+      }
+    });
+
     loadProjects();
   </script>
 </body>
