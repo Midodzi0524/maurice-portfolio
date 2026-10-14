@@ -153,6 +153,16 @@ main {
 .post-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin: 12px 0; }
 .post-gallery img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px; }
 .post-video { width: 100%; aspect-ratio: 16/9; border: 0; border-radius: 12px; margin: 12px 0; background: #000; }
+.inquiry { display: grid; gap: 10px; margin: 4px 0 18px; }
+.inquiry label { display: grid; gap: 4px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.7); }
+.inquiry input, .inquiry textarea {
+  text-transform: none; letter-spacing: 0; font-size: 15px; font-weight: 500;
+  border: 1px solid rgba(255,255,255,.16); background: rgba(0,0,0,.28);
+  color: #fff; border-radius: 8px; padding: 10px 12px; font-family: inherit;
+}
+.inquiry textarea { min-height: 96px; resize: vertical; }
+.inquiry .hp { position: absolute; left: -9999px; height: 0; width: 0; opacity: 0; }
+.inquiry-note { margin: 0; min-height: 1.2em; font-size: 13px; text-transform: none; letter-spacing: 0; font-weight: 600; }
 /* Contact list */
 .clist { display: grid; gap: 8px; }
 .clist a { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.08); text-decoration: none; color: inherit; }
@@ -322,6 +332,14 @@ main {
     <div class="window-bar"><div class="win-dots"><div class="win-dot r"></div><div class="win-dot y"></div><div class="win-dot g"></div></div><div class="window-title">Contact</div></div>
     <div class="window-body">
       <h3>So what are we making?</h3>
+      <form id="inquiry-form" class="inquiry">
+        <label>Name<input name="name" required maxlength="80" autocomplete="name"></label>
+        <label>Email<input name="email" type="email" required maxlength="120" autocomplete="email"></label>
+        <label>Your inquiry<textarea name="message" required maxlength="2000"></textarea></label>
+        <input class="hp" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button class="btn" type="submit">Send inquiry</button>
+        <p id="inquiry-note" class="inquiry-note" role="status"></p>
+      </form>
       <div class="clist">
         <a href="mailto:mauriceattiogbe96@gmail.com"><span>Email</span><span>mauriceattiogbe96@gmail.com</span></a>
         <a href="https://www.linkedin.com/in/maurice-attiogbe-829122267" target="_blank" rel="noopener"><span>LinkedIn</span><span>Profile</span></a>
@@ -693,6 +711,46 @@ tick(); setInterval(tick, 30000);
 renderDesktop();
 renderDock();
 loadIdeas();
+
+document.getElementById("inquiry-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const note = document.getElementById("inquiry-note");
+  const button = form.querySelector("button");
+  const data = new FormData(form);
+  if (String(data.get("company") || "").trim()) {
+    note.textContent = "Sent. Maurice will reply by email.";
+    form.reset();
+    return;
+  }
+  const payload = {
+    name: String(data.get("name") || "").trim(),
+    email: String(data.get("email") || "").trim(),
+    subject: "Website inquiry",
+    message: String(data.get("message") || "").trim()
+  };
+  if (!payload.name || !payload.email || !payload.message) {
+    note.textContent = "Add your name, email, and what you need.";
+    return;
+  }
+  button.disabled = true;
+  note.textContent = "Sending…";
+  try {
+    if (!window.supabase) throw new Error("The form is offline.");
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const saved = await db.from("messages").insert(payload);
+    if (saved.error) throw saved.error;
+    const mailed = await db.functions.invoke("notify-new-message", { body: payload });
+    note.textContent = mailed.error
+      ? "Saved in the dashboard. The email alert is not connected yet."
+      : "Sent. Maurice will reply by email.";
+    form.reset();
+  } catch (error) {
+    note.textContent = "Could not send. Email mauriceattiogbe96@gmail.com instead.";
+  } finally {
+    button.disabled = false;
+  }
+});
 renderExperience();
 renderShots();
 paintCovers();
