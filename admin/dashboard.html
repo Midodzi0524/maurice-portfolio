@@ -407,7 +407,11 @@ async function openSection() {
   const section = sectionById(current);
   document.getElementById("view-title").textContent = section.label;
   document.getElementById("view-sub").textContent = section.blurb || "A snapshot of what is on the site.";
-  document.getElementById("add-btn").classList.toggle("hidden", section.kind === "overview" || section.readOnly || section.singleton);
+  const addBtn = document.getElementById("add-btn");
+const canAdd = Boolean(section.fields) && !section.singleton && !section.readOnly;
+addBtn.classList.remove("hidden");
+addBtn.textContent = canAdd ? "Add" : (section.singleton ? "Edit below" : "Add");
+addBtn.disabled = !canAdd && !section.singleton;
   renderNav();
   const view = document.getElementById("view");
   view.innerHTML = `<div class="empty">Loading…</div>`;
@@ -654,7 +658,20 @@ document.getElementById("logout").onclick = async () => {
   await client().auth.signOut();
   show("login-screen");
 };
-document.getElementById("add-btn").onclick = () => openDrawer(sectionById(current), null);
+document.getElementById("add-btn").onclick = () => {
+  const section = sectionById(current);
+  if (section.singleton) {
+    const form = document.getElementById("profile-form");
+    if (form) form.scrollIntoView({ behavior: "smooth" });
+    toast("There is only one profile. Edit the form, then press Save profile.");
+    return;
+  }
+  if (!section.fields || section.readOnly) {
+    toast("Nothing to add on this page. Open Services, Projects, Skills, Experience, Testimonials, or Posts.");
+    return;
+  }
+  openDrawer(section, null);
+};
 document.getElementById("menu-btn").onclick = () => document.getElementById("side").classList.toggle("open");
 ["click", "keydown"].forEach((name) => document.addEventListener(name, () => {
   if (!document.getElementById("app-screen").classList.contains("hidden")) bumpIdle();
