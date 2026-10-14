@@ -322,7 +322,7 @@ const SECTIONS = [
     { key: "results", label: "Results", type: "textarea" },
     { key: "images", label: "Project images", type: "images" }
   ]},
-  { id: "skills", label: "Skills", table: "skills", blurb: "Skill bars beside About.", titleKey: "name", fields: [
+  { id: "skills", label: "Skills", table: "skills", blurb: "Saved skill levels. The public Ideas window is the blog, not these bars.", titleKey: "name", fields: [
     { key: "name", label: "Name" },
     { key: "category", label: "Category" },
     { key: "level", label: "Level (0-100)", type: "number" }
@@ -339,11 +339,14 @@ const SECTIONS = [
     { key: "role", label: "Role / company" },
     { key: "quote", label: "Quote", type: "textarea" }
   ]},
-  { id: "posts", label: "Posts", table: "posts", blurb: "Articles. Drafts stay off the public site.", titleKey: "title", fields: [
+  { id: "posts", label: "Ideas", table: "posts", blurb: "Blog posts on the Ideas window. Add a cover, more images, and a video link. Drafts stay off the site.", titleKey: "title", fields: [
     { key: "title", label: "Title" },
-    { key: "slug", label: "Slug" },
-    { key: "excerpt", label: "Excerpt", type: "textarea" },
-    { key: "body", label: "Body", type: "textarea" }
+    { key: "excerpt", label: "Description", type: "textarea" },
+    { key: "body", label: "The idea (blank line between paragraphs)", type: "textarea" },
+    { key: "cover_image", label: "Cover image", type: "image" },
+    { key: "images", label: "More images", type: "images" },
+    { key: "video_url", label: "Video link (YouTube, Vimeo, or an mp4 address)" },
+    { key: "published_at", label: "Date", type: "date" }
   ]},
   { id: "messages", label: "Messages", table: "messages", readOnly: true, blurb: "Contact form inbox.", titleKey: "name" }
 ];
@@ -446,7 +449,7 @@ async function renderOverview(view) {
   view.innerHTML = `
     <div class="stats">
       <div class="stat"><b>${projects}</b><span>Projects</span></div>
-      <div class="stat"><b>${posts}</b><span>Posts</span></div>
+      <div class="stat"><b>${posts}</b><span>Ideas</span></div>
       <div class="stat"><b>${messages}</b><span>Messages</span></div>
       <div class="stat"><b>${services}</b><span>Services</span></div>
     </div>
@@ -461,12 +464,12 @@ function itemMeta(section, row) {
   if (section.id === "projects") return row.client || "";
   if (section.id === "skills") return row.category ? `${row.category} · ${row.level || 0}%` : `${row.level || 0}%`;
   if (section.id === "testimonials") return row.role || "";
-  if (section.id === "posts") return row.excerpt || "";
+  if (section.id === "posts") return [row.published_at, row.excerpt].filter(Boolean).join(" · ");
   return row.description || row.summary || "";
 }
 
 async function renderList(view, section) {
-  const { data, error } = await client().from(section.table).select("*").order("position", { ascending: true });
+  const { data, error } = await client().from(section.table).select("*").order("position", { ascending: section.table !== "posts" });
   if (error) throw error;
   if (!data?.length) {
     view.innerHTML = `<div class="empty">Nothing here yet. Use Add to create the first one.</div>`;
@@ -556,13 +559,13 @@ function fieldHtml(field, value) {
       <input id="${id}" type="hidden" value="${escapeHtml(JSON.stringify(list))}">
       <div class="thumbs" id="${id}-preview">${list.map((url) => `<img src="${escapeHtml(url)}" alt="">`).join("")}</div>
       <input id="${id}-file" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-      <p class="lede">Pick one or many. The first image is the large photo on the homepage. All of them appear in the gallery.</p>`;
+      <p class="lede">Add one or more images. They appear with this item on the public site.</p>`;
   }
   const shown = field.type === "platforms" && Array.isArray(value) ? value.join(", ") : (value ?? "");
   if (field.type === "textarea") {
     return `<label for="${id}">${escapeHtml(field.label)}</label><textarea id="${id}">${escapeHtml(shown)}</textarea>`;
   }
-  const type = field.type === "number" ? "number" : "text";
+  const type = field.type === "number" ? "number" : field.type === "date" ? "date" : "text";
   return `<label for="${id}">${escapeHtml(field.label)}</label><input id="${id}" type="${type}" value="${escapeHtml(shown)}">`;
 }
 
@@ -577,6 +580,8 @@ function readFields(section) {
       try { payload[field.key] = JSON.parse(input.value || "[]"); }
       catch { payload[field.key] = []; }
     } else if (field.type === "image") {
+      payload[field.key] = input.value || null;
+    } else if (field.type === "date") {
       payload[field.key] = input.value || null;
     } else if (field.type === "number") {
       payload[field.key] = Number(input.value || 0);
