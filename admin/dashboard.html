@@ -1,108 +1,666 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body { font-family: system-ui, sans-serif; background: #0D1B3E; color: white; margin: 0; padding: 2rem; }
-    a { color: #00B4A6; }
-    .card { background: #162447; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; max-width: 600px; }
-    input, textarea { width: 100%; padding: 0.6rem; margin: 0.4rem 0; border: 1px solid #00B4A6; border-radius: 4px; background: #0D1B3E; color: white; box-sizing: border-box; }
-    button { padding: 0.6rem 1.2rem; background: #00B4A6; color: #0D1B3E; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .project-item { padding: 0.5rem 0; border-bottom: 1px solid #1E3163; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Portfolio Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,680&family=Outfit:wght@360;460;560;650&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #172033;
+    --muted: #5c677a;
+    --line: #e4ddd2;
+    --paper: #f4f0e8;
+    --card: #fffcf7;
+    --navy: #10192b;
+    --navy-2: #1a2740;
+    --teal: #0f766e;
+    --teal-deep: #115e59;
+    --gold: #a6843d;
+    --danger: #9f2d2d;
+    --ok: #166534;
+    --shadow: 0 18px 40px rgba(16, 25, 43, 0.08);
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: Outfit, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    min-height: 100vh;
+  }
+  button, input, textarea, select { font-family: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+  h1, h2, h3 { font-family: Fraunces, serif; font-weight: 560; letter-spacing: -0.03em; margin: 0; }
+  .hidden { display: none !important; }
+  .screen { min-height: 100vh; }
+  .gate {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+  .gate-art {
+    background:
+      radial-gradient(900px 500px at 10% 10%, rgba(166, 132, 61, 0.28), transparent 55%),
+      radial-gradient(700px 500px at 90% 90%, rgba(15, 118, 110, 0.35), transparent 50%),
+      var(--navy);
+    color: #f7f1e6;
+    padding: 56px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .mark { display: flex; align-items: center; gap: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-size: 12px; color: #d7c39a; }
+  .mark i { width: 28px; height: 1px; background: #d7c39a; display: block; }
+  .gate-art h1 { font-size: clamp(42px, 5vw, 68px); line-height: 0.95; max-width: 9ch; }
+  .gate-art p { max-width: 36ch; color: #c9d0dc; font-size: 17px; line-height: 1.6; }
+  .gate-panel { display: flex; align-items: center; justify-content: center; padding: 32px 24px; }
+  .panel {
+    width: min(440px, 100%);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+  }
+  .panel h2 { font-size: 34px; margin-bottom: 6px; }
+  .lede { color: var(--muted); margin: 0 0 18px; line-height: 1.5; }
+  label { display: block; font-size: 13px; font-weight: 560; margin: 12px 0 6px; }
+  input, textarea, select {
+    width: 100%;
+    border: 1px solid #d9d1c5;
+    background: #fff;
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 12px 13px;
+    font-size: 15px;
+  }
+  textarea { min-height: 92px; resize: vertical; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .btn {
+    border: 0;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-weight: 650;
+    background: var(--teal);
+    color: white;
+  }
+  .btn:hover { background: var(--teal-deep); }
+  .btn.block { width: 100%; margin-top: 16px; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn.danger { background: transparent; color: var(--danger); border: 1px solid #efc7c7; }
+  .btn.small { padding: 8px 12px; font-size: 13px; }
+  .error { color: var(--danger); min-height: 1.2em; margin-top: 10px; font-size: 14px; }
+  .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+  .side {
+    background: var(--navy);
+    color: #e8e4dc;
+    padding: 22px 16px;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .brand { padding: 8px 10px 18px; }
+  .brand strong { display: block; font-family: Fraunces, serif; font-size: 22px; color: white; }
+  .brand span { color: #b7c0cf; font-size: 13px; }
+  nav { display: flex; flex-direction: column; gap: 4px; overflow: auto; }
+  nav button {
+    text-align: left;
+    background: transparent;
+    color: #d5dbe6;
+    border: 0;
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 14.5px;
+  }
+  nav button.active, nav button:hover { background: var(--navy-2); color: white; }
+  .side-foot { margin-top: auto; padding: 12px 8px 0; }
+  .who { font-size: 12px; color: #b7c0cf; margin-bottom: 8px; word-break: break-all; }
+  .main { padding: 28px 32px 64px; }
+  .top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 22px; }
+  .top h1 { font-size: 40px; }
+  .top p { margin: 6px 0 0; color: var(--muted); }
+  .menu-btn { display: none; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .stat {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+  }
+  .stat b { display: block; font-family: Fraunces, serif; font-size: 32px; }
+  .stat span { color: var(--muted); font-size: 13px; }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .item h3 { font-size: 20px; }
+  .item p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 4px 9px;
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+  .pill.published { background: #e7f6ee; color: var(--ok); }
+  .pill.draft { background: #f6efe2; color: #8a5a12; }
+  .empty {
+    border: 1px dashed #cfc6b8;
+    border-radius: 14px;
+    padding: 28px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.45);
+  }
+  .drawer-back {
+    position: fixed; inset: 0;
+    background: rgba(16, 25, 43, 0.46);
+    display: flex; justify-content: flex-end;
+    z-index: 20;
+  }
+  .drawer {
+    width: min(520px, 100%);
+    height: 100%;
+    background: var(--paper);
+    padding: 24px;
+    overflow: auto;
+    box-shadow: -20px 0 50px rgba(0,0,0,0.15);
+  }
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: var(--navy);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    z-index: 30;
+    max-width: 320px;
+  }
+  @media (max-width: 900px) {
+    .gate { grid-template-columns: 1fr; }
+    .gate-art { display: none; }
+    .app { grid-template-columns: 1fr; }
+    .side { position: fixed; z-index: 15; transform: translateX(-105%); width: min(280px, 86vw); transition: transform .2s ease; }
+    .side.open { transform: none; }
+    .menu-btn { display: inline-flex; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .main { padding: 18px 16px 48px; }
+    .row, .item { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-  <h1>Admin Dashboard</h1>
-  <p>Welcome. You are logged in.</p>
+  <section id="setup-screen" class="screen gate">
+    <div class="gate-art">
+      <div class="mark"><i></i> Private studio</div>
+      <div>
+        <h1>Your site, from one desk.</h1>
+        <p>Connect this dashboard to Supabase once. After that, log in and edit the live portfolio without touching code.</p>
+      </div>
+    </div>
+    <div class="gate-panel">
+      <form id="setup-form" class="panel">
+        <h2>Connect</h2>
+        <p class="lede">Paste the Project URL and the anon public key from Supabase → Project Settings → API. Never paste the service_role key.</p>
+        <label for="cfg-url">Project URL</label>
+        <input id="cfg-url" type="url" placeholder="https://xxxx.supabase.co" required>
+        <label for="cfg-key">Anon public key</label>
+        <textarea id="cfg-key" placeholder="eyJ..." required></textarea>
+        <button class="btn block" type="submit">Save and continue</button>
+        <div id="setup-error" class="error"></div>
+      </form>
+    </div>
+  </section>
 
-  <div class="card">
-    <h2>Add New Project</h2>
-    <form id="project-form">
-      <input type="text" id="title" placeholder="Title" required>
-      <input type="text" id="client" placeholder="Client">
-      <textarea id="summary" placeholder="Summary" rows="3"></textarea>
-      <textarea id="challenge" placeholder="Challenge" rows="2"></textarea>
-      <textarea id="approach" placeholder="Approach" rows="2"></textarea>
-      <textarea id="results" placeholder="Results" rows="2"></textarea>
-      <button type="submit">Add Project</button>
-    </form>
-  </div>
+  <section id="login-screen" class="screen gate hidden">
+    <div class="gate-art">
+      <div class="mark"><i></i> Owner only</div>
+      <div>
+        <h1>Welcome back.</h1>
+        <p>Sign in with the owner account you created in Supabase. Public visitors cannot open this page to edit anything.</p>
+      </div>
+    </div>
+    <div class="gate-panel">
+      <form id="login-form" class="panel">
+        <h2>Sign in</h2>
+        <p class="lede">Use the email and password from Authentication → Users.</p>
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button class="btn block" type="submit">Log in</button>
+        <button class="btn ghost block" type="button" id="change-keys">Change Supabase keys</button>
+        <div id="login-error" class="error"></div>
+      </form>
+    </div>
+  </section>
 
-  <div class="card">
-    <h2>Your Projects</h2>
-    <div id="projects-list">Loading…</div>
-  </div>
+  <section id="app-screen" class="screen hidden">
+    <div class="app">
+      <aside class="side" id="side">
+        <div class="brand"><strong>Maurice.</strong><span>Content desk</span></div>
+        <nav id="nav"></nav>
+        <div class="side-foot">
+          <div class="who" id="who"></div>
+          <button class="btn ghost small" id="logout" type="button">Log out</button>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="top">
+          <div>
+            <button class="btn ghost small menu-btn" id="menu-btn" type="button">Menu</button>
+            <h1 id="view-title">Overview</h1>
+            <p id="view-sub">A snapshot of what is on the site.</p>
+          </div>
+          <button class="btn" id="add-btn" type="button">Add</button>
+        </div>
+        <div id="view"></div>
+      </main>
+    </div>
+  </section>
 
-  <p><a href="#" id="logout">Log out</a></p>
+  <div id="drawer" class="drawer-back hidden"></div>
+  <div id="toast" class="toast hidden"></div>
 
-  <script>
-    const SUPABASE_URL = 'https://anjcknkqqpgvmrbjaisn.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNrbmtxcXBndm1yYmphaXNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5Njc2MjQsImV4cCI6MjEwNzU0MzYyNH0.PmMgtVHLt0z9uvV5RAkmHuj33TLb_kwLdm70iu8EAnQ';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+const CONFIG_KEY = "maurice-admin-config";
+const SECTIONS = [
+  { id: "overview", label: "Overview", kind: "overview" },
+  { id: "profile", label: "Profile", table: "profile", singleton: true, blurb: "Name, title, and about text.", fields: [
+    { key: "name", label: "Name" },
+    { key: "title", label: "Title" },
+    { key: "tagline", label: "Tagline" },
+    { key: "bio", label: "About / bio", type: "textarea" }
+  ]},
+  { id: "services", label: "Services", table: "services", blurb: "Cards in Why Work With Me.", titleKey: "title", fields: [
+    { key: "title", label: "Title" },
+    { key: "icon", label: "Icon (emoji or symbol)" },
+    { key: "description", label: "Description", type: "textarea" }
+  ]},
+  { id: "projects", label: "Projects", table: "projects", blurb: "Case studies on the public site.", titleKey: "title", fields: [
+    { key: "title", label: "Title" },
+    { key: "client", label: "Client" },
+    { key: "platforms", label: "Platforms (comma separated)", type: "platforms" },
+    { key: "summary", label: "Brief", type: "textarea" },
+    { key: "challenge", label: "Challenge", type: "textarea" },
+    { key: "approach", label: "Approach", type: "textarea" },
+    { key: "results", label: "Results", type: "textarea" }
+  ]},
+  { id: "skills", label: "Skills", table: "skills", blurb: "Skill bars beside About.", titleKey: "name", fields: [
+    { key: "name", label: "Name" },
+    { key: "category", label: "Category" },
+    { key: "level", label: "Level (0-100)", type: "number" }
+  ]},
+  { id: "experience", label: "Experience", table: "experience", blurb: "Career timeline.", titleKey: "role", fields: [
+    { key: "role", label: "Role" },
+    { key: "company", label: "Company" },
+    { key: "start_date", label: "Start" },
+    { key: "end_date", label: "End" },
+    { key: "description", label: "Points (one per line)", type: "textarea" }
+  ]},
+  { id: "testimonials", label: "Testimonials", table: "testimonials", blurb: "Quotes from clients.", titleKey: "name", fields: [
+    { key: "name", label: "Name" },
+    { key: "role", label: "Role / company" },
+    { key: "quote", label: "Quote", type: "textarea" }
+  ]},
+  { id: "posts", label: "Posts", table: "posts", blurb: "Articles. Drafts stay off the public site.", titleKey: "title", fields: [
+    { key: "title", label: "Title" },
+    { key: "slug", label: "Slug" },
+    { key: "excerpt", label: "Excerpt", type: "textarea" },
+    { key: "body", label: "Body", type: "textarea" }
+  ]},
+  { id: "messages", label: "Messages", table: "messages", readOnly: true, blurb: "Contact form inbox.", titleKey: "name" }
+];
 
-    // Redirect to login if not authenticated
-    supabaseClient.auth.getSession().then(function(result) {
-      if (!result.data.session) {
-        window.location.href = 'index.html';
-      }
-    });
+let sb = null;
+let current = "overview";
+let idleTimer = null;
 
-    // Logout
-    document.getElementById('logout').addEventListener('click', async function(e) {
-      e.preventDefault();
-      await supabaseClient.auth.signOut();
-      window.location.href = 'index.html';
-    });
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
 
-    // Load and display projects
-    async function loadProjects() {
-      const list = document.getElementById('projects-list');
-      const { data, error } = await supabaseClient
-        .from('projects')
-        .select('id, title, client, status')
-        .order('position', { ascending: true });
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem(CONFIG_KEY) || "null"); }
+  catch { return null; }
+}
+function saveConfig(url, key) {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify({ url: url.trim(), key: key.trim() }));
+}
+function show(id) {
+  ["setup-screen", "login-screen", "app-screen"].forEach((name) => {
+    document.getElementById(name).classList.toggle("hidden", name !== id);
+  });
+}
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.classList.remove("hidden");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.add("hidden"), 3200);
+}
+function friendlyError(error) {
+  const message = error?.message || "Could not save. Check your internet and try again.";
+  if (/permission denied/i.test(message)) {
+    return "Permission denied. In Supabase SQL Editor, grant INSERT, UPDATE, and DELETE on this table to the authenticated role.";
+  }
+  return message;
+}
+function client() {
+  const config = loadConfig();
+  if (!config?.url || !config?.key) return null;
+  if (!sb) sb = window.supabase.createClient(config.url, config.key);
+  return sb;
+}
+function sectionById(id) { return SECTIONS.find((section) => section.id === id); }
+function bumpIdle() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(async () => {
+    if (client()) await client().auth.signOut();
+    toast("Signed out after inactivity.");
+    show("login-screen");
+  }, 30 * 60 * 1000);
+}
 
-      if (error) {
-        list.textContent = 'Error loading projects: ' + error.message;
-        return;
-      }
-      if (!data || data.length === 0) {
-        list.textContent = 'No projects yet.';
-        return;
-      }
-      list.innerHTML = data.map(function(p) {
-        return '<div class="project-item"><strong>' + (p.title || 'Untitled') + '</strong> — ' + (p.client || '') + ' <em>(' + p.status + ')</em></div>';
-      }).join('');
+function renderNav() {
+  document.getElementById("nav").innerHTML = SECTIONS.map((section) =>
+    `<button type="button" data-id="${section.id}" class="${section.id === current ? "active" : ""}">${escapeHtml(section.label)}</button>`
+  ).join("");
+  document.getElementById("nav").onclick = (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    current = button.dataset.id;
+    document.getElementById("side").classList.remove("open");
+    openSection();
+  };
+}
+
+async function openSection() {
+  const section = sectionById(current);
+  document.getElementById("view-title").textContent = section.label;
+  document.getElementById("view-sub").textContent = section.blurb || "A snapshot of what is on the site.";
+  document.getElementById("add-btn").classList.toggle("hidden", section.kind === "overview" || section.readOnly || section.singleton);
+  renderNav();
+  const view = document.getElementById("view");
+  view.innerHTML = `<div class="empty">Loading…</div>`;
+  try {
+    if (section.kind === "overview") await renderOverview(view);
+    else if (section.singleton) await renderProfile(view, section);
+    else if (section.readOnly) await renderMessages(view);
+    else await renderList(view, section);
+  } catch (error) {
+    view.innerHTML = `<div class="empty">${escapeHtml(friendlyError(error))}</div>`;
+  }
+}
+
+async function countOf(table) {
+  const { count, error } = await client().from(table).select("id", { count: "exact", head: true });
+  if (error) return "–";
+  return count ?? 0;
+}
+
+async function renderOverview(view) {
+  const [projects, posts, messages, services] = await Promise.all([
+    countOf("projects"), countOf("posts"), countOf("messages"), countOf("services")
+  ]);
+  view.innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${projects}</b><span>Projects</span></div>
+      <div class="stat"><b>${posts}</b><span>Posts</span></div>
+      <div class="stat"><b>${messages}</b><span>Messages</span></div>
+      <div class="stat"><b>${services}</b><span>Services</span></div>
+    </div>
+    <div class="empty">Choose a section on the left to add, edit, hide, or delete content. Only rows marked published appear on the public site.</div>`;
+}
+
+function itemTitle(section, row) {
+  return row[section.titleKey] || row.title || row.name || row.role || "Untitled";
+}
+function itemMeta(section, row) {
+  if (section.id === "experience") return [row.company, row.start_date, row.end_date].filter(Boolean).join(" · ");
+  if (section.id === "projects") return row.client || "";
+  if (section.id === "skills") return row.category ? `${row.category} · ${row.level || 0}%` : `${row.level || 0}%`;
+  if (section.id === "testimonials") return row.role || "";
+  if (section.id === "posts") return row.excerpt || "";
+  return row.description || row.summary || "";
+}
+
+async function renderList(view, section) {
+  const { data, error } = await client().from(section.table).select("*").order("position", { ascending: true });
+  if (error) throw error;
+  if (!data?.length) {
+    view.innerHTML = `<div class="empty">Nothing here yet. Use Add to create the first one.</div>`;
+    return;
+  }
+  view.innerHTML = `<div class="list">${data.map((row) => `
+    <article class="item">
+      <div>
+        <h3>${escapeHtml(itemTitle(section, row))}<span class="pill ${row.status === "published" ? "published" : "draft"}">${escapeHtml(row.status || "draft")}</span></h3>
+        <p>${escapeHtml(itemMeta(section, row))}</p>
+      </div>
+      <div class="actions">
+        <button class="btn ghost small" data-act="status" data-id="${row.id}">${row.status === "published" ? "Unpublish" : "Publish"}</button>
+        <button class="btn ghost small" data-act="edit" data-id="${row.id}">Edit</button>
+        <button class="btn danger small" data-act="delete" data-id="${row.id}">Delete</button>
+      </div>
+    </article>`).join("")}</div>`;
+  view.querySelectorAll("button").forEach((button) => {
+    button.onclick = () => onRowAction(section, button.dataset.act, button.dataset.id, data);
+  });
+}
+
+async function renderProfile(view, section) {
+  const { data, error } = await client().from("profile").select("*").limit(1);
+  if (error) throw error;
+  const row = data?.[0] || { status: "published" };
+  view.innerHTML = `<form id="profile-form" class="panel" style="width:min(640px,100%)"></form>`;
+  const form = document.getElementById("profile-form");
+  form.innerHTML = section.fields.map((field) => fieldHtml(field, row[field.key])).join("") +
+    `<label>Status</label><select id="f-status"><option value="published">Published</option><option value="draft">Draft</option></select>
+     <button class="btn block" type="submit">Save profile</button>`;
+  form.querySelector("#f-status").value = row.status || "published";
+  form.onsubmit = async (event) => {
+    event.preventDefault();
+    const payload = readFields(section);
+    payload.status = form.querySelector("#f-status").value;
+    const query = row.id
+      ? client().from("profile").update(payload).eq("id", row.id)
+      : client().from("profile").insert(payload);
+    const { error: saveError } = await query;
+    if (saveError) toast(friendlyError(saveError));
+    else toast("Saved.");
+  };
+}
+
+async function renderMessages(view) {
+  const { data, error } = await client().from("messages").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  if (!data?.length) {
+    view.innerHTML = `<div class="empty">No messages yet.</div>`;
+    return;
+  }
+  view.innerHTML = `<div class="list">${data.map((row) => `
+    <article class="item">
+      <div>
+        <h3>${escapeHtml(row.name || "Visitor")}</h3>
+        <p>${escapeHtml(row.email || "")} · ${escapeHtml(row.subject || "")}</p>
+        <p>${escapeHtml(row.message || "")}</p>
+      </div>
+      <div class="actions">
+        ${row.email ? `<a class="btn ghost small" href="mailto:${encodeURIComponent(row.email)}">Reply</a>` : ""}
+        <button class="btn danger small" data-id="${row.id}">Delete</button>
+      </div>
+    </article>`).join("")}</div>`;
+  view.querySelectorAll("button").forEach((button) => {
+    button.onclick = async () => {
+      if (!confirm("Delete this message?")) return;
+      const { error: deleteError } = await client().from("messages").delete().eq("id", button.dataset.id);
+      if (deleteError) toast(friendlyError(deleteError));
+      else openSection();
+    };
+  });
+}
+
+function fieldHtml(field, value) {
+  const shown = field.type === "platforms" && Array.isArray(value) ? value.join(", ") : (value ?? "");
+  const id = `f-${field.key}`;
+  if (field.type === "textarea") {
+    return `<label for="${id}">${escapeHtml(field.label)}</label><textarea id="${id}">${escapeHtml(shown)}</textarea>`;
+  }
+  const type = field.type === "number" ? "number" : "text";
+  return `<label for="${id}">${escapeHtml(field.label)}</label><input id="${id}" type="${type}" value="${escapeHtml(shown)}">`;
+}
+
+function readFields(section) {
+  const payload = {};
+  section.fields.forEach((field) => {
+    const input = document.getElementById(`f-${field.key}`);
+    if (!input) return;
+    if (field.type === "platforms") {
+      payload.platforms = input.value.split(",").map((part) => part.trim()).filter(Boolean);
+    } else if (field.type === "number") {
+      payload[field.key] = Number(input.value || 0);
+    } else {
+      payload[field.key] = input.value;
     }
+  });
+  return payload;
+}
 
-    // Add new project
-    document.getElementById('project-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const payload = {
-        title: document.getElementById('title').value,
-        client: document.getElementById('client').value,
-        summary: document.getElementById('summary').value,
-        challenge: document.getElementById('challenge').value,
-        approach: document.getElementById('approach').value,
-        results: document.getElementById('results').value,
-        status: 'draft',
-        position: 999
-      };
+function openDrawer(section, row) {
+  const drawer = document.getElementById("drawer");
+  const isNew = !row;
+  drawer.classList.remove("hidden");
+  drawer.innerHTML = `<form class="drawer" id="edit-form">
+    <h2>${isNew ? "Add" : "Edit"} ${escapeHtml(section.label)}</h2>
+    <p class="lede">${escapeHtml(section.blurb || "")}</p>
+    ${section.fields.map((field) => fieldHtml(field, row ? row[field.key] : "")).join("")}
+    <label for="f-status">Status</label>
+    <select id="f-status">
+      <option value="draft">Draft (hidden on the site)</option>
+      <option value="published">Published</option>
+    </select>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn" type="submit">${isNew ? "Create" : "Save"}</button>
+      <button class="btn ghost" type="button" id="close-drawer">Cancel</button>
+    </div>
+    <div id="form-error" class="error"></div>
+  </form>`;
+  drawer.querySelector("#f-status").value = row?.status || "draft";
+  drawer.querySelector("#close-drawer").onclick = () => drawer.classList.add("hidden");
+  drawer.onclick = (event) => { if (event.target === drawer) drawer.classList.add("hidden"); };
+  drawer.querySelector("#edit-form").onsubmit = async (event) => {
+    event.preventDefault();
+    const payload = readFields(section);
+    payload.status = drawer.querySelector("#f-status").value;
+    if (isNew) payload.position = Date.now() % 100000;
+    const query = isNew
+      ? client().from(section.table).insert(payload)
+      : client().from(section.table).update(payload).eq("id", row.id);
+    const { error } = await query;
+    if (error) {
+      drawer.querySelector("#form-error").textContent = friendlyError(error);
+      return;
+    }
+    drawer.classList.add("hidden");
+    toast(isNew ? "Created." : "Saved.");
+    openSection();
+  };
+}
 
-      const { error } = await supabaseClient.from('projects').insert(payload);
-      if (error) {
-        alert('Could not add project: ' + error.message);
-      } else {
-        alert('Project added!');
-        document.getElementById('project-form').reset();
-        loadProjects();
-      }
-    });
+async function onRowAction(section, action, id, rows) {
+  const row = rows.find((item) => String(item.id) === String(id));
+  if (!row) return;
+  if (action === "edit") openDrawer(section, row);
+  if (action === "delete") {
+    if (!confirm("Delete this? This cannot be undone.")) return;
+    const { error } = await client().from(section.table).delete().eq("id", row.id);
+    if (error) toast(friendlyError(error));
+    else { toast("Deleted."); openSection(); }
+  }
+  if (action === "status") {
+    const next = row.status === "published" ? "draft" : "published";
+    const { error } = await client().from(section.table).update({ status: next }).eq("id", row.id);
+    if (error) toast(friendlyError(error));
+    else openSection();
+  }
+}
 
-    loadProjects();
-  </script>
+async function boot() {
+  const config = loadConfig();
+  if (!config?.url || !config?.key) { show("setup-screen"); return; }
+  const { data } = await client().auth.getSession();
+  if (!data.session) { show("login-screen"); return; }
+  document.getElementById("who").textContent = data.session.user.email || "Owner";
+  show("app-screen");
+  bumpIdle();
+  openSection();
+}
+
+document.getElementById("setup-form").onsubmit = (event) => {
+  event.preventDefault();
+  const url = document.getElementById("cfg-url").value.trim();
+  const key = document.getElementById("cfg-key").value.trim();
+  if (!url.startsWith("https://") || !url.includes(".supabase.co")) {
+    document.getElementById("setup-error").textContent = "The URL should look like https://xxxx.supabase.co";
+    return;
+  }
+  saveConfig(url, key);
+  sb = null;
+  show("login-screen");
+};
+document.getElementById("change-keys").onclick = () => {
+  localStorage.removeItem(CONFIG_KEY);
+  sb = null;
+  show("setup-screen");
+};
+document.getElementById("login-form").onsubmit = async (event) => {
+  event.preventDefault();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  const { error } = await client().auth.signInWithPassword({ email, password });
+  document.getElementById("login-error").textContent = error ? error.message : "";
+  if (!error) boot();
+};
+document.getElementById("logout").onclick = async () => {
+  await client().auth.signOut();
+  show("login-screen");
+};
+document.getElementById("add-btn").onclick = () => openDrawer(sectionById(current), null);
+document.getElementById("menu-btn").onclick = () => document.getElementById("side").classList.toggle("open");
+["click", "keydown"].forEach((name) => document.addEventListener(name, () => {
+  if (!document.getElementById("app-screen").classList.contains("hidden")) bumpIdle();
+}));
+renderNav();
+boot();
+</script>
 </body>
 </html>
