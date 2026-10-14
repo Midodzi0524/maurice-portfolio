@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supabase Connection Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+</head>
+<body style="font-family: sans-serif; padding: 40px; background: #0D1B3E; color: white;">
+  <h1>Supabase Connection Test</h1>
+  <p id="status">Testing connection...</p>
+
+  <script>
+    async function test() {
+      const status = document.getElementById('status');
+      try {
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('*')
+          .limit(1);
+
+        if (error) {
+          status.innerHTML = '❌ Error: ' + error.message;
+          status.style.color = '#ff6b6b';
+        } else {
+          status.innerHTML = '✅ Connection successful! Found ' + data.length + ' settings row.';
+          status.style.color = '#00B4A6';
+          console.log(data);
+        }
+      } catch (err) {
+        status.innerHTML = '❌ Unexpected error: ' + err.message;
+        status.style.color = '#ff6b6b';
+      }
+    }
+    test();
+  </script>
+</body>
+</html>
