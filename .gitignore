@@ -1,1 +1,18 @@
+# Secrets – never upload these
+.env
+.env.local
+.env.*.local
 
+# System / editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log
+
+# Temporary or build folders (we will use these later)
+node_modules/
+.cache/
+dist/
