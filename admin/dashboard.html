@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0D1B3E; color: white; margin: 0; padding: 2rem; }
+    a { color: #00B4A6; }
+    .card { background: #162447; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; }
+  </style>
+</head>
+<body>
+  <h1>Admin Dashboard</h1>
+  <p>You are logged in.</p>
+  <div class="card">
+    <h2>Projects</h2>
+    <p>Manage your case studies here (coming next).</p>
+    <div id="projects-list">Loading…</div>
+  </div>
+  <p><a href="#" id="logout">Log out</a></p>
+
+  <script>
+    const SUPABASE_URL = 'https://anjcknkqqpgvmrbjaisn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNrbmtxcXBndm1yYmphaXNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5Njc2MjQsImV4cCI6MjEwNzU0MzYyNH0.PmMgtVHLt0z9uvV5RAkmHuj33TLb_kwLdm70iu8EAnQ';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Check if logged in
+    supabaseClient.auth.getSession().then(({ data }) => {
+      if (!data.session) {
+        window.location.href = 'index.html';
+      }
+    });
+
+    // Logout
+    document.getElementById('logout').addEventListener('click', async function(e) {
+      e.preventDefault();
+      await supabaseClient.auth.signOut();
+      window.location.href = 'index.html';
+    });
+
+    // Load projects (basic list)
+    async function loadProjects() {
+      const { data, error } = await supabaseClient.from('projects').select('id, title, status').order('position');
+      const list = document.getElementById('projects-list');
+      if (error) {
+        list.textContent = 'Error: ' + error.message;
+        return;
+      }
+      if (!data || data.length === 0) {
+        list.textContent = 'No projects yet.';
+        return;
+      }
+      list.innerHTML = data.map(p => `<div>${p.title} (${p.status})</div>`).join('');
+    }
+    loadProjects();
+  </script>
+</body>
+</html>
