@@ -563,33 +563,18 @@ function placeTiles() {
   const w = desk.clientWidth;
   const h = desk.clientHeight;
   const menu = document.querySelector(".menubar").offsetHeight || 28;
-  const dock = (document.getElementById("dock").offsetHeight || 70) + 18;
-  const phone = w < 700;
-  const tablet = w >= 700 && w < 1100;
-  if (phone || tablet) {
-    const cols = w < 480 ? 3 : 4;
-    const top = menu + 12;
-    const rows = Math.ceil(tiles.length / cols);
-    const cellH = (h - top - dock) / rows;
-    const cellW = w / cols;
-    tiles.forEach((tile, i) => {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      const tw = tile.offsetWidth || 78;
-      tile.style.left = (col * cellW + (cellW - tw) / 2) + "px";
-      tile.style.top = (top + row * cellH) + "px";
-    });
-    return;
-  }
-  const spots = [[0.04,0.02],[0.22,0.08],[0.40,0.0],[0.58,0.08],[0.76,0.02],[0.06,0.28],[0.24,0.36],[0.42,0.26],[0.60,0.36],[0.78,0.28]];
+  const dock = (document.getElementById("dock").offsetHeight || 70) + 20;
+  const cols = w < 520 ? 3 : w < 980 ? 4 : 5;
+  const rows = Math.ceil(tiles.length / cols);
+  const top = menu + 22;
+  const cellW = w / cols;
+  const cellH = Math.max(118, (h - top - dock) / rows);
   tiles.forEach((tile, i) => {
-    const spot = spots[i] || [0.1, 0.2];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
     const tw = tile.offsetWidth || 96;
-    const th = tile.offsetHeight || 110;
-    const x = spot[0] * Math.max(0, w - tw - 16);
-    const y = menu + 8 + spot[1] * Math.max(0, h - menu - dock - th);
-    tile.style.left = x + "px";
-    tile.style.top = y + "px";
+    tile.style.left = (col * cellW + (cellW - tw) / 2) + "px";
+    tile.style.top = (top + row * cellH + 8) + "px";
   });
 }
 
@@ -908,6 +893,33 @@ function bootTheme() {
     applyTheme(null, next);
   };
 }
+function safeColor(value) {
+  const color = String(value || "").trim();
+  return /^#[0-9a-fA-F]{6}$/.test(color) ? color : "";
+}
+function hexAlpha(hex, alpha) {
+  const n = parseInt(hex.slice(1), 16);
+  return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + alpha + ")";
+}
+function applyBackground(settings) {
+  if (!settings) return;
+  const photo = document.querySelector(".wallpaper .photo");
+  const wash = document.querySelector(".wallpaper .wash");
+  const wall = document.querySelector(".wallpaper");
+  const image = safeUrl(settings.background_image);
+  const base = safeColor(settings.background_color);
+  const tint = safeColor(settings.wash_color);
+  if (photo) photo.style.backgroundImage = image ? "url(\"" + image + "\")" : "";
+  if (base) {
+    if (wall) wall.style.background = base;
+    document.body.style.background = base;
+  }
+  if (wash && (base || tint)) {
+    const top = tint || base;
+    const bottom = base || tint;
+    wash.style.background = "linear-gradient(165deg, " + hexAlpha(top, 0.5) + " 0%, " + hexAlpha(top, 0.16) + " 48%, " + hexAlpha(bottom, 0.5) + " 100%)";
+  }
+}
 async function countVisit(db) {
   try {
     if (sessionStorage.getItem("maurice-view")) return;
@@ -927,7 +939,7 @@ async function loadContent() {
       db.from("services").select("title,description,position,status").eq("status", "published").order("position", { ascending: true }),
       db.from("skills").select("name,category,level,position,status").eq("status", "published").order("position", { ascending: true }),
       db.from("testimonials").select("name,role,quote,position,status").eq("status", "published").order("position", { ascending: true }),
-      db.from("site_settings").select("palette,default_mode,site_title,seo_description").limit(1)
+      db.from("site_settings").select("palette,default_mode,site_title,seo_description,background_image,background_color,wash_color").limit(1)
     ]);
     if (!profileRes.error && profileRes.data && profileRes.data[0] && profileRes.data[0].status !== "draft") applyProfile(profileRes.data[0]);
     if (!projectRes.error) applyProjects(projectRes.data);
@@ -940,6 +952,7 @@ async function loadContent() {
       if (!localStorage.getItem("maurice-mode") && settings.default_mode) applyTheme(null, settings.default_mode);
       if (settings.palette) applyTheme(settings.palette, null);
       if (settings.site_title) document.title = settings.site_title;
+      applyBackground(settings);
     }
     countVisit(db);
   } catch (error) { console.warn(error); }
