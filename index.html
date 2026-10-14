@@ -545,6 +545,7 @@ function renderDock() {
 
 const SUPABASE_URL = "https://anjcknkqqpgvmrbjaisn.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNrbmtxcXBndm1yYmphaXNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5Njc2MjQsImV4cCI6MjEwNzU0MzYyNH0.PmMgtVHLt0z9uvV5RAkmHuj33TLb_kwLdm70iu8EAnQ";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_C2dzFZ4kh1m7W6WAMDgJMg_9fUfhsUN";
 let ideas = [
   { title: "Start with the person, not the platform", excerpt: "A campaign only works when you know who it is for.", body: "I still start every brief with one question: who is this for, on a Thursday afternoon in Accra?\n\nPlatforms change. The person does not. Once that is clear, the calendar, the design, and the ads have somewhere to stand.", cover_image: "", images: [], video_url: "", published_at: "2026-03-12" },
   { title: "One look, every channel", excerpt: "Thunder Thursday worked because the name and the picture never drifted.", body: "A weekly offer dies if the flyer, the caption, and the in-store line tell three different stories.\n\nPick one line. Repeat it until people can say it back.", cover_image: "", images: [], video_url: "", published_at: "2026-05-02" }
@@ -740,10 +741,16 @@ document.getElementById("inquiry-form").addEventListener("submit", async (event)
     const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     const saved = await db.from("messages").insert(payload);
     if (saved.error) throw saved.error;
-    const mailed = await db.functions.invoke("notify-new-message", { body: payload });
-    note.textContent = mailed.error
-      ? "Saved in the dashboard. The email alert is not connected yet."
-      : "Sent. Maurice will reply by email.";
+    const mailed = await fetch(SUPABASE_URL + "/functions/v1/notify-new-message", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_PUBLISHABLE_KEY },
+      body: JSON.stringify(payload)
+    });
+    let mailedBody = {};
+    try { mailedBody = await mailed.json(); } catch (e) { mailedBody = {}; }
+    note.textContent = mailed.ok && mailedBody.ok
+      ? "Sent. Maurice will reply by email."
+      : "Saved in the dashboard. Replace the mail function with the Resend code, then deploy it again.";
     form.reset();
   } catch (error) {
     note.textContent = "Could not send. Email mauriceattiogbe96@gmail.com instead.";
