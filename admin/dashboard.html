@@ -42,6 +42,8 @@
   }
   h1, h2, h3 { font-family: Fraunces, serif; font-weight: 560; letter-spacing: -0.03em; margin: 0; }
   .hidden { display: none !important; }
+
+  /* Screens */
   .screen { min-height: 100vh; }
   .gate {
     min-height: 100vh;
@@ -100,6 +102,8 @@
   .btn.danger { background: transparent; color: var(--danger); border: 1px solid #efc7c7; }
   .btn.small { padding: 8px 12px; font-size: 13px; }
   .error { color: var(--danger); min-height: 1.2em; margin-top: 10px; font-size: 14px; }
+
+  /* App shell */
   .app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
   .side {
     background: var(--navy);
@@ -132,6 +136,7 @@
   .top h1 { font-size: 40px; }
   .top p { margin: 6px 0 0; color: var(--muted); }
   .menu-btn { display: none; }
+
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
   .stat {
     background: var(--card);
@@ -141,6 +146,8 @@
   }
   .stat b { display: block; font-family: Fraunces, serif; font-size: 32px; }
   .stat span { color: var(--muted); font-size: 13px; }
+
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
   .list { display: flex; flex-direction: column; gap: 10px; }
   .item {
     background: var(--card);
@@ -148,13 +155,15 @@
     border-radius: 14px;
     padding: 14px 16px;
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
     gap: 12px;
-    align-items: center;
   }
   .item h3 { font-size: 20px; }
   .item p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .actions .btn { min-height: 40px; }
+  .thumbs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+  .thumbs img, .icon-preview { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); background: white; }
   .pill {
     display: inline-flex;
     align-items: center;
@@ -175,6 +184,7 @@
     color: var(--muted);
     background: rgba(255,255,255,0.45);
   }
+
   .drawer-back {
     position: fixed; inset: 0;
     background: rgba(16, 25, 43, 0.46);
@@ -200,6 +210,7 @@
     z-index: 30;
     max-width: 320px;
   }
+
   @media (max-width: 900px) {
     .gate { grid-template-columns: 1fr; }
     .gate-art { display: none; }
@@ -298,7 +309,7 @@ const SECTIONS = [
   ]},
   { id: "services", label: "Services", table: "services", blurb: "Cards in Why Work With Me.", titleKey: "title", fields: [
     { key: "title", label: "Title" },
-    { key: "icon", label: "Icon (emoji or symbol)" },
+    { key: "icon_url", label: "Icon image", type: "image" },
     { key: "description", label: "Description", type: "textarea" }
   ]},
   { id: "projects", label: "Projects", table: "projects", blurb: "Case studies on the public site.", titleKey: "title", fields: [
@@ -308,7 +319,8 @@ const SECTIONS = [
     { key: "summary", label: "Brief", type: "textarea" },
     { key: "challenge", label: "Challenge", type: "textarea" },
     { key: "approach", label: "Approach", type: "textarea" },
-    { key: "results", label: "Results", type: "textarea" }
+    { key: "results", label: "Results", type: "textarea" },
+    { key: "images", label: "Project images", type: "images" }
   ]},
   { id: "skills", label: "Skills", table: "skills", blurb: "Skill bars beside About.", titleKey: "name", fields: [
     { key: "name", label: "Name" },
@@ -407,11 +419,7 @@ async function openSection() {
   const section = sectionById(current);
   document.getElementById("view-title").textContent = section.label;
   document.getElementById("view-sub").textContent = section.blurb || "A snapshot of what is on the site.";
-  const addBtn = document.getElementById("add-btn");
-const canAdd = Boolean(section.fields) && !section.singleton && !section.readOnly;
-addBtn.classList.remove("hidden");
-addBtn.textContent = canAdd ? "Add" : (section.singleton ? "Edit below" : "Add");
-addBtn.disabled = !canAdd && !section.singleton;
+  document.getElementById("add-btn").classList.toggle("hidden", section.kind === "overview" || section.readOnly || section.singleton);
   renderNav();
   const view = document.getElementById("view");
   view.innerHTML = `<div class="empty">Loading…</div>`;
@@ -471,9 +479,9 @@ async function renderList(view, section) {
         <p>${escapeHtml(itemMeta(section, row))}</p>
       </div>
       <div class="actions">
-        <button class="btn ghost small" data-act="status" data-id="${row.id}">${row.status === "published" ? "Unpublish" : "Publish"}</button>
-        <button class="btn ghost small" data-act="edit" data-id="${row.id}">Edit</button>
-        <button class="btn danger small" data-act="delete" data-id="${row.id}">Delete</button>
+        <button class="btn ghost small" type="button" data-act="status" data-id="${row.id}">${row.status === "published" ? "Unpublish" : "Publish"}</button>
+        <button class="btn small" type="button" data-act="edit" data-id="${row.id}">Edit</button>
+        <button class="btn danger small" type="button" data-act="delete" data-id="${row.id}">Delete</button>
       </div>
     </article>`).join("")}</div>`;
   view.querySelectorAll("button").forEach((button) => {
@@ -534,8 +542,23 @@ async function renderMessages(view) {
 }
 
 function fieldHtml(field, value) {
-  const shown = field.type === "platforms" && Array.isArray(value) ? value.join(", ") : (value ?? "");
   const id = `f-${field.key}`;
+  if (field.type === "image") {
+    const url = value || "";
+    return `<label for="${id}-file">${escapeHtml(field.label)}</label>
+      <input id="${id}" type="hidden" value="${escapeHtml(url)}">
+      ${url ? `<img class="icon-preview" src="${escapeHtml(url)}" alt="">` : ""}
+      <input id="${id}-file" type="file" accept="image/jpeg,image/png,image/webp">`;
+  }
+  if (field.type === "images") {
+    const list = Array.isArray(value) ? value : [];
+    return `<label for="${id}-file">${escapeHtml(field.label)}</label>
+      <input id="${id}" type="hidden" value="${escapeHtml(JSON.stringify(list))}">
+      <div class="thumbs" id="${id}-preview">${list.map((url) => `<img src="${escapeHtml(url)}" alt="">`).join("")}</div>
+      <input id="${id}-file" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+      <p class="lede">Pick one or many. The first image is the large photo on the homepage. All of them appear in the gallery.</p>`;
+  }
+  const shown = field.type === "platforms" && Array.isArray(value) ? value.join(", ") : (value ?? "");
   if (field.type === "textarea") {
     return `<label for="${id}">${escapeHtml(field.label)}</label><textarea id="${id}">${escapeHtml(shown)}</textarea>`;
   }
@@ -550,6 +573,11 @@ function readFields(section) {
     if (!input) return;
     if (field.type === "platforms") {
       payload.platforms = input.value.split(",").map((part) => part.trim()).filter(Boolean);
+    } else if (field.type === "images") {
+      try { payload[field.key] = JSON.parse(input.value || "[]"); }
+      catch { payload[field.key] = []; }
+    } else if (field.type === "image") {
+      payload[field.key] = input.value || null;
     } else if (field.type === "number") {
       payload[field.key] = Number(input.value || 0);
     } else {
@@ -559,6 +587,45 @@ function readFields(section) {
   return payload;
 }
 
+async function uploadImage(file) {
+  const allowed = ["image/jpeg", "image/png", "image/webp"];
+  if (!allowed.includes(file.type)) throw new Error("Use a JPG, PNG, or WebP.");
+  if (file.size > 5 * 1024 * 1024) throw new Error("Each image must be under 5 MB.");
+  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`;
+  const { error } = await client().storage.from("portfolio").upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+  if (error) throw error;
+  return client().storage.from("portfolio").getPublicUrl(path).data.publicUrl;
+}
+
+function bindUploads(section, drawer) {
+  section.fields.forEach((field) => {
+    if (field.type !== "image" && field.type !== "images") return;
+    const file = document.getElementById(`f-${field.key}-file`);
+    const hidden = document.getElementById(`f-${field.key}`);
+    if (!file || !hidden) return;
+    file.onchange = async () => {
+      const err = drawer.querySelector("#form-error");
+      err.textContent = "Uploading…";
+      try {
+        if (field.type === "image") {
+          if (!file.files[0]) return;
+          hidden.value = await uploadImage(file.files[0]);
+        } else {
+          const list = JSON.parse(hidden.value || "[]");
+          for (const item of file.files) list.push(await uploadImage(item));
+          hidden.value = JSON.stringify(list);
+          const preview = document.getElementById(`f-${field.key}-preview`);
+          if (preview) preview.innerHTML = list.map((url) => `<img src="${escapeHtml(url)}" alt="">`).join("");
+        }
+        err.textContent = "";
+        toast("Image uploaded. Press Save.");
+      } catch (error) {
+        err.textContent = friendlyError(error);
+      }
+    };
+  });
+}
 function openDrawer(section, row) {
   const drawer = document.getElementById("drawer");
   const isNew = !row;
@@ -579,6 +646,7 @@ function openDrawer(section, row) {
     <div id="form-error" class="error"></div>
   </form>`;
   drawer.querySelector("#f-status").value = row?.status || "draft";
+  bindUploads(section, drawer);
   drawer.querySelector("#close-drawer").onclick = () => drawer.classList.add("hidden");
   drawer.onclick = (event) => { if (event.target === drawer) drawer.classList.add("hidden"); };
   drawer.querySelector("#edit-form").onsubmit = async (event) => {
@@ -658,20 +726,7 @@ document.getElementById("logout").onclick = async () => {
   await client().auth.signOut();
   show("login-screen");
 };
-document.getElementById("add-btn").onclick = () => {
-  const section = sectionById(current);
-  if (section.singleton) {
-    const form = document.getElementById("profile-form");
-    if (form) form.scrollIntoView({ behavior: "smooth" });
-    toast("There is only one profile. Edit the form, then press Save profile.");
-    return;
-  }
-  if (!section.fields || section.readOnly) {
-    toast("Nothing to add on this page. Open Services, Projects, Skills, Experience, Testimonials, or Posts.");
-    return;
-  }
-  openDrawer(section, null);
-};
+document.getElementById("add-btn").onclick = () => openDrawer(sectionById(current), null);
 document.getElementById("menu-btn").onclick = () => document.getElementById("side").classList.toggle("open");
 ["click", "keydown"].forEach((name) => document.addEventListener(name, () => {
   if (!document.getElementById("app-screen").classList.contains("hidden")) bumpIdle();
