@@ -500,7 +500,7 @@ let projects = [
   { id: "about", label: "Ideas", color: "#6fc3ff", icon: "idea", win: "win-about", x: 320, y: 250 },
   { id: "experience", label: "Experience", color: "#ffe14d", icon: "briefcase", win: "win-experience", x: 440, y: 300 },
   { id: "quotes", label: "Quotes", color: "#fb7185", icon: "quote", win: "win-quotes", x: 560, y: 180 },
-  { id: "contact", label: "Contact", color: "#ffcf33", icon: "mail", win: "win-contact", x: 80, y: 400 }
+  { id: "contact", label: "Contact", color: "#ffcf33", icon: "chat", win: "win-contact", x: 80, y: 400 }
 ];
 
 const dockItems = [
@@ -532,8 +532,9 @@ function iconSVG(type, color = "#fff") {
     phone: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.33 1.9.6 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.27 1.85.47 2.81.6A2 2 0 0 1 22 16.92z"/></svg>`,
     idea: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12c.6.6 1 1.5 1 2h6c0-.5.4-1.4 1-2a7 7 0 0 0-4-12z"/></svg>`,
     briefcase: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><path d="M2 13h20"/></svg>`,
-    megaphone: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><path d="M3 11v2a2 2 0 0 0 2 2h1l4 4V5L6 9H5a2 2 0 0 0-2 2z"/><path d="M16 8a5 5 0 0 1 0 8"/><path d="M19 5a9 9 0 0 1 0 14"/></svg>`,
-    chart: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><path d="M4 19V5"/><path d="M4 19h16"/><rect x="7" y="11" width="3" height="5"/><rect x="12" y="7" width="3" height="9"/><rect x="17" y="9" width="3" height="7"/></svg>`,
+    spark: `<svg viewBox="0 0 24 24" fill="${color}"><path d="M12 2.2 13.6 7l4.9 1.3L13.6 9.8 12 14.6 10.4 9.8 5.5 8.3 10.4 7 12 2.2z"/><path d="M18 13.2 18.8 15.6 21.3 16.3 18.8 17.1 18 19.5 17.2 17.1 14.7 16.3 17.2 15.6 18 13.2z"/></svg>`,
+    medal: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.8" stroke-linejoin="round"><path d="M8 3h8l-2.2 6.2"/><path d="M8 3l2.2 6.2"/><circle cx="12" cy="15.2" r="5" fill="${color}" stroke="none"/><path d="M12 13.1l.9 1.8 2 .3-1.45 1.4.35 2-1.8-.95-1.8.95.35-2L8.1 15.2l2-.3.9-1.8z" fill="#1a120c" stroke="none"/></svg>`,
+    chat: `<svg viewBox="0 0 24 24" fill="${color}"><path d="M5 4.5h14a2 2 0 0 1 2 2v7.2a2 2 0 0 1-2 2H9.2L5 19.8v-4.1H5a2 2 0 0 1-2-2V6.5a2 2 0 0 1 2-2z"/></svg>`,
     quote: `<svg viewBox="0 0 24 24" fill="${color}"><path d="M10 7H6.5A3.5 3.5 0 0 0 3 10.5V14h5v-3H6.2A2 2 0 0 1 8 9h2V7zm11 0h-3.5A3.5 3.5 0 0 0 14 10.5V14h5v-3h-1.8a2 2 0 0 1 1.8-2H21V7z"/></svg>`,
     link: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
     trash: `<svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="1.6"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
@@ -806,11 +807,31 @@ function applyExperience(rows) {
   renderExperience();
 }
 function applyProjects(rows) {
-  if (!rows || !rows.length) return;
   const known = { "J Bridge": "win-jbridge", "LeBanzini": "win-lebanzini", "Reading Cave": "win-reading", "Oraimo": "win-oraimo" };
   const colors = { "J Bridge": "#ff4b2b", "LeBanzini": "#ff9a2f", "Reading Cave": "#5b2bff", "Oraimo": "#9dff6a" };
   const spare = ["#6fc3ff", "#ffcf33", "#c084fc", "#34d399"];
-  const work = rows.map((row, index) => {
+  const builtin = [
+    { id: "jbridge", label: "J Bridge Books", color: "#ff4b2b", icon: "book", win: "win-jbridge", brand: "J Bridge" },
+    { id: "lebanzini", label: "LeBanzini", color: "#ff9a2f", icon: "bolt", win: "win-lebanzini", brand: "LeBanzini" },
+    { id: "reading", label: "Reading Cave", color: "#5b2bff", icon: "book", win: "win-reading", brand: "Reading Cave" },
+    { id: "oraimo", label: "Oraimo Ghana", color: "#9dff6a", icon: "sound", win: "win-oraimo", brand: "Oraimo" }
+  ];
+  const list = rows || [];
+  const used = new Set();
+  const work = builtin.map(item => {
+    const row = list.find(entry => brandFor(entry) === item.brand);
+    if (!row) return item;
+    used.add(row);
+    const win = document.getElementById(item.win);
+    if (win) {
+      const title = win.querySelector(".window-title");
+      if (title) title.textContent = row.client || row.title || item.label;
+      fillProject(win, row);
+    }
+    return Object.assign({}, item, { label: row.client || item.label, row: row });
+  });
+  list.forEach((row, index) => {
+    if (used.has(row)) return;
     const brand = brandFor(row);
     const winId = known[brand] || ("win-db-" + String(row.id || index).replace(/[^a-z0-9-]/gi, ""));
     const win = document.getElementById(winId) || makeWindow(winId, row.client || row.title, brand);
@@ -818,20 +839,20 @@ function applyProjects(rows) {
     const title = win.querySelector(".window-title");
     if (title) title.textContent = row.client || row.title || "Project";
     fillProject(win, row);
-    return {
+    work.push({
       id: winId.replace(/^win-/, ""),
       label: row.client || row.title || "Project",
       color: colors[brand] || spare[index % spare.length],
       icon: iconForBrand(brand),
       win: winId,
-      row
-    };
+      row: row
+    });
   });
   const fixed = projects.filter(item => ["about", "experience", "contact", "services", "skills", "quotes"].includes(item.id));
   projects = work.concat(fixed);
   renderDesktop();
   renderShots();
-  work.forEach(item => addRemoteShots(document.getElementById(item.win), item.row));
+  work.forEach(item => { if (item.row) addRemoteShots(document.getElementById(item.win), item.row); });
   paintCovers();
   placeTiles();
 }
