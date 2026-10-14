@@ -8,7 +8,7 @@
   <style>
     body { font-family: system-ui, sans-serif; background: #0D1B3E; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
     .login-box { background: #162447; padding: 2rem; border-radius: 8px; width: 320px; }
-    input { width: 100%; padding: 0.75rem; margin: 0.5rem 0; border: 1px solid #00B4A6; border-radius: 4px; background: #0D1B3E; color: white; }
+    input { width: 100%; padding: 0.75rem; margin: 0.5rem 0; border: 1px solid #00B4A6; border-radius: 4px; background: #0D1B3E; color: white; box-sizing: border-box; }
     button { width: 100%; padding: 0.75rem; background: #00B4A6; color: #0D1B3E; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .error { color: #ff6b6b; margin-top: 1rem; }
   </style>
@@ -18,25 +18,27 @@
     <h2>Admin Login</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
-    <button onclick="login()">Log In</button>
+    <button id="loginBtn">Log In</button>
     <div id="error" class="error"></div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://anjcknkqqpgvmrbjaisn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFuamNrbmtxcXBndm1yYmphaXNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5Njc2MjQsImV4cCI6MjEwNzU0MzYyNH0.PmMgtVHLt0z9uvV5RAkmHuj33TLb_kwLdm70iu8EAnQ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function login() {
+    document.getElementById('loginBtn').addEventListener('click', async function() {
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const errorEl = document.getElementById('error');
+
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
-        document.getElementById('error').textContent = error.message;
+        errorEl.textContent = error.message;
       } else {
         window.location.href = 'dashboard.html';
       }
-    }
+    });
   </script>
 </body>
 </html>
