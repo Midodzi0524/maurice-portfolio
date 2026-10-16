@@ -309,8 +309,11 @@ const SECTIONS = [
   { id: "profile", label: "Profile", table: "profile", singleton: true, blurb: "Name, title, and about text.", fields: [
     { key: "name", label: "Name" },
     { key: "title", label: "Title" },
-    { key: "tagline", label: "Tagline" },
-    { key: "bio", label: "About / bio", type: "textarea" }
+    { key: "tagline", label: "Tagline (the line under your name in the hero)", type: "textarea" },
+    { key: "bio", label: "About / bio (shown under the Selected Work heading)", type: "textarea" },
+    { key: "photo_url", label: "Your picture or logo (shown beside your name in the hero)", type: "image" },
+    { key: "photo_shape", label: "Picture shape", type: "select", options: [["", "As uploaded (best for logos)"], ["rounded", "Rounded corners"], ["circle", "Circle (best for a portrait)"]] },
+    { key: "hero_note", label: "Small note in the hero corner (empty shows “Scroll”)" }
   ]},
   { id: "services", label: "Services", table: "services", blurb: "Rows in the Services accordion. The image shows when a row is opened.", titleKey: "title", fields: [
     { key: "title", label: "Title" },
@@ -351,6 +354,11 @@ const SECTIONS = [
     { key: "images", label: "More images", type: "images" },
     { key: "video_url", label: "Video link (YouTube, Vimeo, or an mp4 address)" },
     { key: "published_at", label: "Date", type: "date" }
+  ]},
+  { id: "cta", label: "Start a project", table: "site_settings", singleton: true, noStatus: true, blurb: "The message that persuades visitors before the contact form. Leave a box empty to keep the built-in wording.", fields: [
+    { key: "cta_headline", label: "Headline" },
+    { key: "cta_text", label: "Supporting paragraph", type: "textarea" },
+    { key: "cta_points", label: "Reassurance tags (one per line, up to 4)", type: "textarea" }
   ]},
   { id: "process", label: "Process", table: "process_steps", blurb: "The stages shown in the Process section. Drag order with the arrows.", titleKey: "title", fields: [
     { key: "title", label: "Stage name" },
@@ -535,7 +543,8 @@ async function renderProfile(view, section) {
   const form = document.getElementById("profile-form");
   const status = section.noStatus ? "" : `<label>Status</label><select id="f-status"><option value="published">Published</option><option value="draft">Draft</option></select>`;
   form.innerHTML = section.fields.map((field) => fieldHtml(field, row[field.key])).join("") +
-    status + `<button class="btn block" type="submit">Save</button>`;
+    status + `<button class="btn block" type="submit">Save</button><div id="form-error" class="error"></div>`;
+  bindUploads(section, form);
   if (!section.noStatus && form.querySelector("#f-status")) form.querySelector("#f-status").value = row.status || "published";
   form.onsubmit = async (event) => {
     event.preventDefault();
@@ -688,6 +697,9 @@ function bindUploads(section, drawer) {
         if (field.type === "image") {
           if (!file.files[0]) return;
           hidden.value = await uploadImage(file.files[0]);
+          let pv = hidden.nextElementSibling;
+          if (!pv || !pv.classList.contains("icon-preview")) { pv = document.createElement("img"); pv.className = "icon-preview"; pv.alt = ""; hidden.after(pv); }
+          pv.src = hidden.value;
         } else {
           const list = JSON.parse(hidden.value || "[]");
           for (const item of file.files) list.push(await uploadImage(item));
