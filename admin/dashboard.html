@@ -222,6 +222,10 @@
     .main { padding: 18px 16px 48px; }
     .row, .item { grid-template-columns: 1fr; }
   }
+.pvp{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);background:#fff;border-left:1px solid var(--line);z-index:30;display:flex;flex-direction:column;transform:translateX(105%);transition:transform .25s}.pvp.on{transform:none}.pvp iframe{flex:1;border:0}.pvp>div{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;gap:8px}
+nav button .bdg{float:right;background:#ff9a2f;color:#1a100a;border-radius:99px;font-size:12px;padding:0 8px;font-weight:700}
+.pill.new{background:#fde8cf;color:#9a4a00}.item.unread{border-left:4px solid #ff9a2f}
+.bars div{display:grid;grid-template-columns:130px 1fr 44px;gap:10px;align-items:center;margin:8px 0;font-size:14px}.bars i{display:block;height:8px;border-radius:4px;background:#ff9a2f}
 </style>
 </head>
 <body>
@@ -287,13 +291,14 @@
             <h1 id="view-title">Overview</h1>
             <p id="view-sub">A snapshot of what is on the site.</p>
           </div>
-          <button class="btn" id="add-btn" type="button">Add</button>
+          <div class="actions"><button class="btn ghost" id="pv-btn" type="button">Preview site</button><button class="btn" id="add-btn" type="button">Add</button></div>
         </div>
         <div id="view"></div>
       </main>
     </div>
   </section>
 
+  <aside class="pvp" id="pvp" aria-label="Live preview"><div><strong>Live preview</strong><span class="actions"><button class="btn ghost small" id="pv-reload" type="button">Reload</button><button class="btn ghost small" id="pv-close" type="button">Close</button></span></div><iframe id="pv-frame" title="Site preview"></iframe></aside>
   <div id="drawer" class="drawer-back hidden"></div>
   <div id="toast" class="toast hidden"></div>
 
@@ -307,9 +312,9 @@ const SECTIONS = [
     { key: "tagline", label: "Tagline" },
     { key: "bio", label: "About / bio", type: "textarea" }
   ]},
-  { id: "services", label: "Services", table: "services", blurb: "Cards in Why Work With Me.", titleKey: "title", fields: [
+  { id: "services", label: "Services", table: "services", blurb: "Rows in the Services accordion. The image shows when a row is opened.", titleKey: "title", fields: [
     { key: "title", label: "Title" },
-    { key: "icon_url", label: "Icon image", type: "image" },
+    { key: "icon_url", label: "Service image (optional)", type: "image" },
     { key: "description", label: "Description", type: "textarea" }
   ]},
   { id: "projects", label: "Projects", table: "projects", blurb: "Case studies on the public site.", titleKey: "title", fields: [
@@ -322,10 +327,9 @@ const SECTIONS = [
     { key: "results", label: "Results", type: "textarea" },
     { key: "images", label: "Project images", type: "images" }
   ]},
-  { id: "skills", label: "Skills", table: "skills", blurb: "Saved skill levels. The public Ideas window is the blog, not these bars.", titleKey: "name", fields: [
+  { id: "skills", label: "Skills", table: "skills", defaults: { level: 0 }, blurb: "Skills shown on the site as a simple grid. Give each one a short category.", titleKey: "name", fields: [
     { key: "name", label: "Name" },
-    { key: "category", label: "Category" },
-    { key: "level", label: "Level (0-100)", type: "number" }
+    { key: "category", label: "Category" }
   ]},
   { id: "experience", label: "Experience", table: "experience", blurb: "Career timeline.", titleKey: "role", fields: [
     { key: "role", label: "Role" },
@@ -339,7 +343,7 @@ const SECTIONS = [
     { key: "role", label: "Role / company" },
     { key: "quote", label: "Quote", type: "textarea" }
   ]},
-  { id: "posts", label: "Ideas", table: "posts", blurb: "Blog posts on the Ideas window. Add a cover, more images, and a video link. Drafts stay off the site.", titleKey: "title", fields: [
+  { id: "posts", label: "Journal", table: "posts", blurb: "Journal posts on the site. Add a cover, more images, and a video link. Drafts stay off the site.", titleKey: "title", fields: [
     { key: "title", label: "Title" },
     { key: "excerpt", label: "Description", type: "textarea" },
     { key: "body", label: "The idea (blank line between paragraphs)", type: "textarea" },
@@ -348,13 +352,22 @@ const SECTIONS = [
     { key: "video_url", label: "Video link (YouTube, Vimeo, or an mp4 address)" },
     { key: "published_at", label: "Date", type: "date" }
   ]},
+  { id: "process", label: "Process", table: "process_steps", blurb: "The stages shown in the Process section. Drag order with the arrows.", titleKey: "title", fields: [
+    { key: "title", label: "Stage name" },
+    { key: "description", label: "Short description", type: "textarea" },
+    { key: "image_url", label: "Image (optional)", type: "image" }
+  ]},
+  { id: "faqs", label: "FAQ", table: "faqs", blurb: "Questions and answers shown in the FAQ section.", titleKey: "question", fields: [
+    { key: "question", label: "Question" },
+    { key: "answer", label: "Answer", type: "textarea" }
+  ]},
   { id: "messages", label: "Messages", table: "messages", readOnly: true, blurb: "Contact form inbox.", titleKey: "name" },
-  { id: "settings", label: "Appearance", table: "site_settings", singleton: true, noStatus: true, blurb: "Palette, light or dark, and the desktop background. Palette names: studio, navy-gold, slate-teal, charcoal-crimson, forest-sand, royal-silver, ocean-coral. Leave the photo empty to keep the current studio picture.", fields: [
-    { key: "palette", label: "Palette" },
-    { key: "default_mode", label: "Default mode (dark or light)" },
-    { key: "background_image", label: "Background photo", type: "image" },
-    { key: "background_color", label: "Background color", type: "color" },
-    { key: "wash_color", label: "Tint color", type: "color" },
+  { id: "settings", label: "Appearance", table: "site_settings", singleton: true, noStatus: true, blurb: "Accent palette, default light or dark mode, and the hero photo. Leave a colour on \"Use the site default\" to keep the built-in look.", fields: [
+    { key: "palette", label: "Accent palette", type: "select", options: [["","Studio (warm orange)"],["navy-gold","Navy and gold"],["slate-teal","Slate and teal"],["charcoal-crimson","Charcoal and crimson"],["forest-sand","Forest and sand"],["royal-silver","Royal and silver"],["ocean-coral","Ocean and coral"]] },
+    { key: "default_mode", label: "Default mode", type: "select", options: [["dark","Dark"],["light","Light"]] },
+    { key: "background_image", label: "Hero photo", type: "image" },
+    { key: "background_color", label: "Hero background colour (behind the photo)", type: "color" },
+    { key: "wash_color", label: "Hero tint colour", type: "color" },
     { key: "site_title", label: "Site title" },
     { key: "seo_description", label: "SEO description", type: "textarea" }
   ]}
@@ -389,6 +402,7 @@ function toast(message) {
   el.textContent = message;
   el.classList.remove("hidden");
   clearTimeout(toast._t);
+  if (/^(Saved|Created|Deleted)/.test(message)) setTimeout(reloadPreview, 500);
   toast._t = setTimeout(() => el.classList.add("hidden"), 3200);
 }
 function friendlyError(error) {
@@ -433,6 +447,7 @@ async function openSection() {
   document.getElementById("view-sub").textContent = section.blurb || "A snapshot of what is on the site.";
   document.getElementById("add-btn").classList.toggle("hidden", section.kind === "overview" || section.readOnly || section.singleton);
   renderNav();
+  refreshBadge();
   const view = document.getElementById("view");
   view.innerHTML = `<div class="empty">Loading…</div>`;
   try {
@@ -452,17 +467,25 @@ async function countOf(table) {
 }
 
 async function renderOverview(view) {
-  const [projects, posts, messages, visits] = await Promise.all([
-    countOf("projects"), countOf("posts"), countOf("messages"), countOf("page_views")
-  ]);
+  const since = new Date(Date.now() - 30 * 864e5).toISOString();
+  const [projects, posts, messages] = await Promise.all([countOf("projects"), countOf("posts"), countOf("messages")]);
+  const unread = await client().from("messages").select("id", { count: "exact", head: true }).or("read.is.null,read.eq.false");
+  const pv = await client().from("page_views").select("section").gte("created_at", since).limit(10000);
+  const tally = {};
+  (pv.data || []).forEach((r) => { const k = r.section || "home"; tally[k] = (tally[k] || 0) + 1; });
+  const list = Object.entries(tally).filter(([k]) => k !== "home").sort((a, b) => b[1] - a[1]);
+  const max = list.length ? list[0][1] : 1;
   view.innerHTML = `
     <div class="stats">
       <div class="stat"><b>${projects}</b><span>Projects</span></div>
-      <div class="stat"><b>${posts}</b><span>Ideas</span></div>
-      <div class="stat"><b>${messages}</b><span>Messages</span></div>
-      <div class="stat"><b>${visits}</b><span>Visits</span></div>
+      <div class="stat"><b>${posts}</b><span>Journal posts</span></div>
+      <div class="stat"><b>${messages}</b><span>Messages · ${unread.count || 0} new</span></div>
+      <div class="stat"><b>${tally.home || 0}</b><span>Visits, last 30 days</span></div>
     </div>
-    <div class="empty">Choose a section on the left to add, edit, hide, or delete content. Only rows marked published appear on the public site.</div>`;
+    <div class="panel"><h2 style="font-size:22px">How far visitors scroll</h2>
+      <p class="lede">Visitors who reached each section in the last 30 days. Counted once per visit, with no cookies and no personal data.</p>
+      <div class="bars">${list.length ? list.map(([k, v]) => `<div><span>${escapeHtml(k)}</span><i style="width:${Math.max(4, Math.round(v / max * 100))}%"></i><b>${v}</b></div>`).join("") : '<p class="lede">No section views yet.</p>'}</div>
+    </div>`;
 }
 
 function itemTitle(section, row) {
@@ -471,10 +494,10 @@ function itemTitle(section, row) {
 function itemMeta(section, row) {
   if (section.id === "experience") return [row.company, row.start_date, row.end_date].filter(Boolean).join(" · ");
   if (section.id === "projects") return row.client || "";
-  if (section.id === "skills") return row.category ? `${row.category} · ${row.level || 0}%` : `${row.level || 0}%`;
+  if (section.id === "skills") return row.category || "";
   if (section.id === "testimonials") return row.role || "";
   if (section.id === "posts") return [row.published_at, row.excerpt].filter(Boolean).join(" · ");
-  return row.description || row.summary || "";
+  return row.description || row.summary || row.answer || "";
 }
 
 async function renderList(view, section) {
@@ -491,6 +514,8 @@ async function renderList(view, section) {
         <p>${escapeHtml(itemMeta(section, row))}</p>
       </div>
       <div class="actions">
+        <button class="btn ghost small" type="button" data-act="up" data-id="${row.id}" aria-label="Move up">↑</button>
+        <button class="btn ghost small" type="button" data-act="down" data-id="${row.id}" aria-label="Move down">↓</button>
         <button class="btn ghost small" type="button" data-act="status" data-id="${row.id}">${row.status === "published" ? "Unpublish" : "Publish"}</button>
         <button class="btn small" type="button" data-act="edit" data-id="${row.id}">Edit</button>
         <button class="btn danger small" type="button" data-act="delete" data-id="${row.id}">Delete</button>
@@ -525,6 +550,15 @@ async function renderProfile(view, section) {
   };
 }
 
+async function refreshBadge() {
+  try {
+    const { count, error } = await client().from("messages").select("id", { count: "exact", head: true }).or("read.is.null,read.eq.false");
+    const b = document.querySelector('#nav [data-id="messages"]');
+    if (!b || error) return;
+    b.querySelector(".bdg")?.remove();
+    if (count) b.insertAdjacentHTML("beforeend", `<span class="bdg">${count}</span>`);
+  } catch (e) {}
+}
 async function renderMessages(view) {
   const { data, error } = await client().from("messages").select("*").order("created_at", { ascending: false });
   if (error) throw error;
@@ -532,24 +566,29 @@ async function renderMessages(view) {
     view.innerHTML = `<div class="empty">No messages yet.</div>`;
     return;
   }
-  view.innerHTML = `<div class="list">${data.map((row) => `
-    <article class="item">
+  view.innerHTML = `<div class="list">${data.map((row) => { const unread = !row.read; return `
+    <article class="item ${unread ? "unread" : ""}">
       <div>
-        <h3>${escapeHtml(row.name || "Visitor")}</h3>
-        <p>${escapeHtml(row.email || "")} · ${escapeHtml(row.subject || "")}</p>
+        <h3>${escapeHtml(row.name || "Visitor")}${unread ? '<span class="pill new">New</span>' : ""}</h3>
+        <p>${row.created_at ? escapeHtml(new Date(row.created_at).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })) + " · " : ""}${escapeHtml(row.email || "")} · ${escapeHtml(row.subject || "")}</p>
         <p>${escapeHtml(row.message || "")}</p>
       </div>
       <div class="actions">
-        ${row.email ? `<a class="btn ghost small" href="mailto:${encodeURIComponent(row.email)}">Reply</a>` : ""}
-        <button class="btn danger small" data-id="${row.id}">Delete</button>
+        ${row.email ? `<a class="btn ghost small" href="mailto:${escapeHtml(row.email)}?subject=${encodeURIComponent("Re: " + (row.subject || "Your inquiry"))}">Reply</a>` : ""}
+        <button class="btn ghost small" data-act="read" data-id="${row.id}" data-unread="${unread ? 1 : 0}">${unread ? "Mark read" : "Mark unread"}</button>
+        <button class="btn danger small" data-act="del" data-id="${row.id}">Delete</button>
       </div>
-    </article>`).join("")}</div>`;
+    </article>`; }).join("")}</div>`;
   view.querySelectorAll("button").forEach((button) => {
     button.onclick = async () => {
-      if (!confirm("Delete this message?")) return;
-      const { error: deleteError } = await client().from("messages").delete().eq("id", button.dataset.id);
-      if (deleteError) toast(friendlyError(deleteError));
-      else openSection();
+      let res;
+      if (button.dataset.act === "del") {
+        if (!confirm("Delete this message?")) return;
+        res = await client().from("messages").delete().eq("id", button.dataset.id);
+      } else {
+        res = await client().from("messages").update({ read: button.dataset.unread === "1" }).eq("id", button.dataset.id);
+      }
+      if (res.error) toast(friendlyError(res.error)); else openSection();
     };
   });
 }
@@ -572,8 +611,12 @@ function fieldHtml(field, value) {
       <p class="lede">Add one or more images. They appear with this item on the public site.</p>`;
   }
   if (field.type === "color") {
-    const shown = /^#[0-9a-fA-F]{6}$/.test(String(value || "")) ? value : "#5c3a24";
-    return `<label for="${id}">${escapeHtml(field.label)}</label><input id="${id}" type="color" value="${escapeHtml(shown)}">`;
+    const has = /^#[0-9a-fA-F]{6}$/.test(String(value || ""));
+    return `<label for="${id}">${escapeHtml(field.label)}</label><input id="${id}" type="color" value="${has ? escapeHtml(value) : "#5c3a24"}" oninput="document.getElementById('${id}-off').checked=false">
+      <label style="display:flex;gap:8px;align-items:center;font-weight:400"><input id="${id}-off" type="checkbox" style="width:auto" ${has ? "" : "checked"}> Use the site default</label>`;
+  }
+  if (field.type === "select") {
+    return `<label for="${id}">${escapeHtml(field.label)}</label><select id="${id}">${field.options.map(([v, l]) => `<option value="${escapeHtml(v)}" ${String(value || "") === v ? "selected" : ""}>${escapeHtml(l)}</option>`).join("")}</select>`;
   }
   const shown = field.type === "platforms" && Array.isArray(value) ? value.join(", ") : (value ?? "");
   if (field.type === "textarea") {
@@ -597,6 +640,9 @@ function readFields(section) {
       payload[field.key] = input.value || null;
     } else if (field.type === "date") {
       payload[field.key] = input.value || null;
+    } else if (field.type === "color") {
+      const off = document.getElementById(`f-${field.key}-off`);
+      payload[field.key] = off && off.checked ? null : input.value;
     } else if (field.type === "number") {
       payload[field.key] = Number(input.value || 0);
     } else {
@@ -606,13 +652,25 @@ function readFields(section) {
   return payload;
 }
 
+async function shrink(file) {
+  try {
+    const bmp = await createImageBitmap(file), k = Math.min(1, 2000 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    const blob = await new Promise((r) => c.toBlob(r, "image/webp", 0.82));
+    return blob && blob.type === "image/webp" && blob.size < file.size ? blob : file;
+  } catch (e) { return file; }
+}
 async function uploadImage(file) {
   const allowed = ["image/jpeg", "image/png", "image/webp"];
   if (!allowed.includes(file.type)) throw new Error("Use a JPG, PNG, or WebP.");
-  if (file.size > 5 * 1024 * 1024) throw new Error("Each image must be under 5 MB.");
-  const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  if (file.size > 15 * 1024 * 1024) throw new Error("Each image must be under 15 MB.");
+  const out = await shrink(file);
+  if (out.size > 5 * 1024 * 1024) throw new Error("This image is still over 5 MB after compressing. Use a smaller picture.");
+  const ext = out.type === "image/png" ? "png" : out.type === "image/webp" ? "webp" : "jpg";
   const path = `${Date.now()}-${Math.random().toString(16).slice(2)}.${ext}`;
-  const { error } = await client().storage.from("portfolio").upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type });
+  const { error } = await client().storage.from("portfolio").upload(path, out, { cacheControl: "31536000", upsert: false, contentType: out.type });
   if (error) throw error;
   return client().storage.from("portfolio").getPublicUrl(path).data.publicUrl;
 }
@@ -672,7 +730,11 @@ function openDrawer(section, row) {
     event.preventDefault();
     const payload = readFields(section);
     payload.status = drawer.querySelector("#f-status").value;
-    if (isNew) payload.position = Date.now() % 100000;
+    if (isNew) {
+      const { data: last } = await client().from(section.table).select("position").order("position", { ascending: false }).limit(1);
+      payload.position = ((last && last[0] && Number(last[0].position)) || 0) + 1;
+      Object.assign(payload, section.defaults || {});
+    }
     const query = isNew
       ? client().from(section.table).insert(payload)
       : client().from(section.table).update(payload).eq("id", row.id);
@@ -690,6 +752,16 @@ function openDrawer(section, row) {
 async function onRowAction(section, action, id, rows) {
   const row = rows.find((item) => String(item.id) === String(id));
   if (!row) return;
+  if (action === "up" || action === "down") {
+    const i = rows.indexOf(row), j = action === "up" ? i - 1 : i + 1;
+    if (j < 0 || j >= rows.length) return;
+    const order = rows.slice(); [order[i], order[j]] = [order[j], order[i]];
+    const n = order.length, desc = section.table === "posts";
+    const results = await Promise.all(order.map((r, k) => client().from(section.table).update({ position: desc ? n - k : k + 1 }).eq("id", r.id)));
+    const bad = results.find((x) => x.error);
+    if (bad) toast(friendlyError(bad.error)); else { openSection(); reloadPreview(); }
+    return;
+  }
   if (action === "edit") openDrawer(section, row);
   if (action === "delete") {
     if (!confirm("Delete this? This cannot be undone.")) return;
@@ -701,7 +773,7 @@ async function onRowAction(section, action, id, rows) {
     const next = row.status === "published" ? "draft" : "published";
     const { error } = await client().from(section.table).update({ status: next }).eq("id", row.id);
     if (error) toast(friendlyError(error));
-    else openSection();
+    else { openSection(); reloadPreview(); }
   }
 }
 
@@ -750,6 +822,11 @@ document.getElementById("menu-btn").onclick = () => document.getElementById("sid
 ["click", "keydown"].forEach((name) => document.addEventListener(name, () => {
   if (!document.getElementById("app-screen").classList.contains("hidden")) bumpIdle();
 }));
+const pvp = document.getElementById("pvp"), pvf = document.getElementById("pv-frame");
+function reloadPreview() { if (pvp.classList.contains("on") && pvf.contentWindow) pvf.contentWindow.location.reload(); }
+document.getElementById("pv-btn").onclick = () => { if (!pvf.getAttribute("src")) pvf.src = "index.html"; pvp.classList.toggle("on"); };
+document.getElementById("pv-reload").onclick = reloadPreview;
+document.getElementById("pv-close").onclick = () => pvp.classList.remove("on");
 renderNav();
 boot();
 </script>
