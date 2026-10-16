@@ -218,7 +218,7 @@ footer{background:var(--ac);color:#1a100a;padding:0 var(--p) 28px}
 
 <section class="cta" id="contact">
   <div class="lab" style="border-color:rgba(26,16,10,.3);color:inherit"><span>Start a project</span><span>Reply within 48 hours</span></div>
-  <h2 class="rv" id="cta-h">Your next customer is scrolling right now. Give them a reason to stop.</h2>
+  <h2 id="cta-h">Your next customer is scrolling right now. Give them a reason to stop.</h2>
   <p class="pitch" id="cta-t">I took a bookshop from zero to 1,084 followers, with posts reaching 12.1K. Tell me what you sell, and I will show you what a clear idea, said the same way everywhere, can do for it.</p>
   <ul class="pts" id="cta-p"><li>One clear plan</li><li>Reports in plain words</li><li>Reply within 48 hours</li></ul>
   <div class="cg">
@@ -356,13 +356,18 @@ document.addEventListener("click",e=>{const a=e.target.closest("[data-go]");if(!
 /* reveals + motion */
 let io;
 function watch(){if(!G)return;io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.15});
-  $$(".rv:not(.in),.im:not(.in)").forEach(el=>io.observe(el));ScrollTrigger.refresh()}
+  $$(".rv:not(.in),.im:not(.in)").forEach(el=>io.observe(el));reveal();ScrollTrigger.refresh()}
+function reveal(){const h=innerHeight;$$(".rv:not(.in),.im:not(.in)").forEach(el=>{const r=el.getBoundingClientRect();if(r.top<h*.92&&r.bottom>0)el.classList.add("in")})}
+addEventListener("scroll",reveal,{passive:true});addEventListener("resize",reveal);
+addEventListener("load",()=>{reveal();setTimeout(reveal,600)});
+setTimeout(()=>$$(".rv,.im").forEach(el=>{if(el.getBoundingClientRect().top<innerHeight*2)el.classList.add("in")}),5000);
 function setName(name){split($("#h1"),name)}
 function intro(){
   const c={n:0},end=()=>{$("#pre").remove();document.body.style.overflow=""};
   if(!G){end();return}
   document.body.style.overflow="hidden";
   const tl=gsap.timeline({onComplete:end});
+  setTimeout(()=>{if($("#pre"))tl.progress(1)},6500);
   tl.to(c,{n:100,duration:1.5,ease:"power2.inOut",onUpdate:()=>$("#cnt").textContent=Math.round(c.n)})
     .to("#pre",{yPercent:-100,duration:.9,ease:"expo.inOut"})
     .from(".hbg",{clipPath:"inset(18% 12% 18% 12%)",duration:1.6,ease:"expo.out"},"-=.5")
