@@ -19,19 +19,20 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#1a100a;--fg:#f2e8dc;--mut:rgba(242,232,220,.62);--line:rgba(242,232,220,.16);--ac:#ff9a2f;--pa:#26170e;--d:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;--b:'Inter Tight','Helvetica Neue',Arial,sans-serif;--p:clamp(18px,4vw,56px)}
-html[data-mode=light]{--bg:#f1e9df;--fg:#1d120b;--mut:rgba(29,18,11,.64);--line:rgba(29,18,11,.18);--ac:#d9680a;--pa:#e7dccf}
+:root{--bg:#1a100a;--fg:#f2e8dc;--mut:rgba(242,232,220,.62);--line:rgba(242,232,220,.16);--ac:#ff9a2f;--pa:#26170e;--veil:rgba(26,16,10,.74);--glass:rgba(26,16,10,.5);--d:'Bricolage Grotesque','Helvetica Neue',Arial,sans-serif;--b:'Inter Tight','Helvetica Neue',Arial,sans-serif;--p:clamp(18px,4vw,56px)}
+html[data-mode=light]{--bg:#f1e9df;--fg:#1d120b;--mut:rgba(29,18,11,.64);--line:rgba(29,18,11,.18);--ac:#d9680a;--pa:#e7dccf;--veil:rgba(241,233,223,.8);--glass:rgba(241,233,223,.55)}
+#bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg);pointer-events:none}#bgfx img{position:absolute;inset:-3%;width:106%;height:106%;filter:blur(7px) saturate(.9);transform:translateZ(0)}#bgfx:after{content:"";position:absolute;inset:0;background:var(--veil)}
 *{box-sizing:border-box;margin:0}
 html{background:var(--bg)}
-body{background:var(--bg);color:var(--fg);font:400 17px/1.55 var(--b);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body{background:transparent;color:var(--fg);font:400 17px/1.55 var(--b);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 img{display:block;width:100%;height:100%;object-fit:cover}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;text-align:left}
 :focus-visible{outline:2px solid var(--ac);outline-offset:3px}
 h1,h2,h3{font-family:var(--d);font-weight:600;letter-spacing:-.035em;line-height:.98}
 h2{font-size:clamp(34px,5.4vw,84px);max-width:16ch}
-section{padding:clamp(80px,12vw,180px) var(--p) 0;position:relative}
-.lab{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;margin-bottom:clamp(30px,5vw,70px);font-size:14px;color:var(--mut)}
+section{padding:clamp(40px,5vw,72px) var(--p) 0;position:relative}
+.lab{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px;margin-bottom:clamp(18px,2.4vw,32px);font-size:14px;color:var(--mut)}
 .mut{color:var(--mut)}
 /* header */
 header{position:fixed;inset:0 0 auto;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:18px var(--p);mix-blend-mode:difference;color:#fff;transition:transform .5s cubic-bezier(.7,0,.2,1)}
@@ -69,26 +70,26 @@ header button,header a{font-size:15px;font-weight:500}
 .big{font:600 clamp(26px,4.2vw,66px)/1.08 var(--d);letter-spacing:-.03em;max-width:24ch}
 .big .w{transition:opacity .2s}
 .phil{display:grid;grid-template-columns:1fr 1fr;gap:var(--p);align-items:end}
-.mq{overflow:hidden;white-space:nowrap;border-block:1px solid var(--line);margin-top:clamp(70px,10vw,150px);padding:18px 0;font:600 clamp(28px,5vw,72px)/1 var(--d);letter-spacing:-.03em}
+.mq{overflow:hidden;white-space:nowrap;border-block:1px solid var(--line);padding:12px 0;font:600 clamp(28px,5vw,72px)/1 var(--d);letter-spacing:-.03em}
 .mq div{display:inline-block;animation:mq 28s linear infinite}
 .mq span{padding-right:.6em}.mq span:nth-child(even){color:var(--ac)}
 @keyframes mq{to{transform:translateX(-50%)}}
 /* work */
-.wg{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,5vw,80px) var(--p)}
-.card{display:block;width:100%}.card:nth-child(even){margin-top:clamp(40px,10vw,160px)}
+.wg{display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,2.6vw,36px) var(--p)}
+.card{display:block;width:100%}.card:nth-child(even){margin-top:clamp(20px,4vw,56px)}
 .card .im{aspect-ratio:4/5;overflow:hidden;background:var(--pa)}
 .card img{transition:transform .9s cubic-bezier(.2,.8,.2,1)}.card:hover img{transform:scale(1.05)!important}
 .cap{display:flex;justify-content:space-between;align-items:baseline;gap:14px;margin-top:14px}
 .cap h3{font-size:clamp(24px,3vw,40px)}.cap span{color:var(--mut);font-size:14px}
 /* services */
 .sv{border-top:1px solid var(--line)}.sv:last-child{border-bottom:1px solid var(--line)}
-.sv>button{display:grid;grid-template-columns:70px 1fr 30px;align-items:center;width:100%;padding:28px 0}
+.sv>button{display:grid;grid-template-columns:70px 1fr 30px;align-items:center;width:100%;padding:18px 0}
 .sv h3{font-size:clamp(28px,4.4vw,64px);transition:transform .4s,color .3s}.sv>button:hover h3{transform:translateX(14px);color:var(--ac)}
 .sv .pl{font-size:30px;transition:transform .4s}.sv.on .pl{transform:rotate(45deg)}
 .sv .bd{display:grid;grid-template-rows:0fr;transition:grid-template-rows .6s cubic-bezier(.2,.8,.2,1)}.sv.on .bd{grid-template-rows:1fr}
 .bd>div{overflow:hidden;padding-left:70px}.bd p{max-width:52ch;color:var(--mut);padding-bottom:12px}.si{aspect-ratio:16/9;max-width:520px;margin-bottom:28px;overflow:hidden;background:var(--pa)}.bd a{display:inline-block;margin-bottom:28px;border-bottom:1px solid var(--ac)}
 /* index */
-.row{display:grid;grid-template-columns:60px 1.4fr 1.6fr 80px;gap:14px;width:100%;padding:24px 0;border-top:1px solid var(--line);align-items:baseline;transition:padding .4s,color .3s}
+.row{display:grid;grid-template-columns:60px 1.4fr 1.6fr 80px;gap:14px;width:100%;padding:16px 0;border-top:1px solid var(--line);align-items:baseline;transition:padding .4s,color .3s}
 .row b{font:600 clamp(24px,3.4vw,48px)/1 var(--d);letter-spacing:-.03em}.row i,.row em{font-style:normal;color:var(--mut);font-size:14px}.row:hover{padding-left:16px;color:var(--ac)}
 #peek{position:fixed;left:0;top:0;width:260px;height:330px;z-index:40;pointer-events:none;opacity:0;scale:.8;transition:opacity .3s,scale .4s,transform .25s cubic-bezier(.2,.8,.2,1)}
 #peek.on{opacity:1;scale:1}
@@ -97,27 +98,27 @@ header button,header a{font-size:15px;font-weight:500}
 .pr .im{aspect-ratio:3/4;margin-bottom:20px;overflow:hidden}.pr h3{font-size:clamp(28px,3.4vw,46px);margin:6px 0 10px}.pr p{color:var(--mut);max-width:30ch}
 /* skills */
 .tp{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
-.tp div{background:var(--bg);padding:26px;min-height:190px;display:flex;flex-direction:column;justify-content:space-between;transition:background .4s}.tp div:hover{background:var(--pa)}
+.tp div{background:var(--glass);padding:22px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;transition:background .4s}.tp div:hover{background:var(--pa)}
 .tp h3{font-size:clamp(24px,2.6vw,36px)}
 /* quotes */
-.qt{position:relative;min-height:340px}
+.qt{position:relative;min-height:250px}
 .qt blockquote{position:absolute;inset:0;opacity:0;transition:opacity .8s;pointer-events:none}.qt blockquote.on{opacity:1;pointer-events:auto}
 .qt p{font:600 clamp(26px,4vw,60px)/1.08 var(--d);letter-spacing:-.03em;max-width:26ch}.qt cite{display:block;margin-top:26px;font-style:normal;color:var(--mut)}
 .dots{display:flex;gap:10px;margin-top:20px}.dots button{width:34px;height:3px;background:var(--line)}.dots .on{background:var(--ac)}
 /* together */
 .tg{display:grid;grid-template-columns:1fr 1.2fr;gap:var(--p)}
-.job{border-top:1px solid var(--line);padding:22px 0}.job h3{font-size:clamp(24px,2.6vw,38px);margin:4px 0 8px}.job li{color:var(--mut);margin-left:18px}
+.job{border-top:1px solid var(--line);padding:14px 0}.job h3{font-size:clamp(24px,2.6vw,38px);margin:4px 0 8px}.job li{color:var(--mut);margin-left:18px}
 /* faq */
-.fq{border-top:1px solid var(--line)}.fq button{display:flex;justify-content:space-between;width:100%;padding:24px 0;font:600 clamp(20px,2.4vw,32px)/1.15 var(--d);letter-spacing:-.02em}
+.fq{border-top:1px solid var(--line)}.fq button{display:flex;justify-content:space-between;width:100%;padding:16px 0;font:600 clamp(20px,2.4vw,32px)/1.15 var(--d);letter-spacing:-.02em}
 .fq .bd p{padding-bottom:26px}.fq .bd>div{padding-left:0}.fq.on .pl{transform:rotate(45deg)}.fq .pl{transition:transform .4s}
 /* journal */
 .jg{display:grid;grid-template-columns:1fr 1fr;gap:0 var(--p)}
-.jp{display:grid;grid-template-columns:120px 1fr;gap:20px;padding:24px 0;border-top:1px solid var(--line);transition:color .3s;width:100%}.jp:hover{color:var(--ac)}
+.jp{display:grid;grid-template-columns:120px 1fr;gap:20px;padding:16px 0;border-top:1px solid var(--line);transition:color .3s;width:100%}.jp:hover{color:var(--ac)}
 .jp .im{aspect-ratio:1;background:var(--pa);overflow:hidden}.jp h3{font-size:clamp(22px,2.2vw,32px);margin-bottom:6px}.jp p{color:var(--mut);font-size:15px}
 /* cta */
-.cta{background:var(--ac);color:#1a100a;margin-top:clamp(80px,12vw,180px);padding-bottom:clamp(40px,6vw,80px)}
-.cta h2{font-size:clamp(48px,11vw,190px);max-width:none;line-height:.88}
-.cg{display:grid;grid-template-columns:1fr 1fr;gap:var(--p);margin-top:clamp(40px,6vw,90px)}
+.cta{background:var(--ac);color:#1a100a;margin-top:clamp(40px,5vw,72px);padding-bottom:clamp(28px,4vw,48px)}
+.cta h2{font-size:clamp(38px,7.4vw,118px);max-width:18ch;line-height:.94}.pitch{font-size:clamp(18px,1.7vw,24px);max-width:48ch;margin-top:22px;font-weight:500}.pts{display:flex;flex-wrap:wrap;gap:8px 12px;list-style:none;padding:0;margin:18px 0 0}.pts li{border:1.5px solid rgba(26,16,10,.5);border-radius:99px;padding:6px 16px;font-size:15px;font-weight:500}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:var(--p);margin-top:clamp(24px,3vw,40px)}
 form{display:grid;gap:18px}label{display:grid;gap:6px;font-size:14px;font-weight:500}
 input,textarea{font:inherit;font-size:17px;background:transparent;border:0;border-bottom:1.5px solid rgba(26,16,10,.5);color:#1a100a;padding:8px 0;border-radius:0;resize:vertical}
 textarea{min-height:90px}input:focus,textarea:focus{outline:0;border-color:#1a100a}.hp{position:absolute;left:-9999px}
@@ -142,6 +143,7 @@ footer{background:var(--ac);color:#1a100a;padding:0 var(--p) 28px}
 </style>
 </head>
 <body>
+<div id="bgfx" aria-hidden="true"><img id="bgi" src="images/wallpaper.webp" alt=""></div>
 <div id="pre" aria-hidden="true"><span>Digital marketer, Accra</span><b id="cnt">0</b></div>
 <div id="prog"></div>
 <header id="hd"><button id="mb" aria-expanded="false">Menu</button><a href="#top" aria-label="Home"><div class="mark"></div></a><a href="#contact" data-go>Start a project</a></header>
@@ -155,72 +157,70 @@ footer{background:var(--ac);color:#1a100a;padding:0 var(--p) 28px}
 <div class="hero">
   <div class="hbg"><img id="hbg" src="images/wallpaper.webp" alt=""></div>
   <div class="float"><img id="hfl" src="images/oraimo-freepods-3-giveaway.webp" alt="Oraimo FreePods 3 giveaway campaign"></div>
-  <div class="hmeta"><div><span id="hl" style="opacity:.7">Studio</span><br>Accra, Ghana</div><p id="tag">Campaigns, communities and the quiet details that make people act.</p><span>Philosophy</span></div>
+  <div class="hmeta"><div><span id="hl" style="opacity:.7">Studio</span><br>Accra, Ghana</div><p id="tag">Campaigns, communities and the quiet details that make people act.</p><span>Scroll</span></div>
   <h1 id="h1" aria-label="Maurice Attiogbe"></h1>
 </div>
 
-<section id="philosophy">
-  <div class="lab"><span>01 Philosophy</span><span>Next</span></div>
-  <div class="phil"><h2 class="rv">Made to be remembered</h2><p class="big" id="bio">I build marketing the way good shops are run: one clear idea, said the same way everywhere, measured every week. People should be able to repeat it back.</p></div>
-  <div class="mq" aria-hidden="true"><div id="mq1"></div></div>
-</section>
+<div class="mq" aria-hidden="true"><div id="mq1"></div></div>
 
 <section id="work">
-  <div class="lab"><span>02 Selected Work</span><span>Next</span></div>
-  <h2 class="rv" style="margin-bottom:24px">Four brands, each carried by a single idea.</h2>
-  <p class="mut rv" style="max-width:46ch;margin-bottom:clamp(40px,6vw,90px)">Social, campaigns and design, built as one system and kept consistent, post after post.</p>
+  <div class="lab"><span>01 Selected Work</span><span>Next</span></div>
+  <h2 class="rv" style="margin-bottom:14px">Four brands, each carried by a single idea.</h2>
+  <p class="mut rv" id="bio" style="max-width:52ch;margin-bottom:clamp(22px,2.6vw,38px)">Social, campaigns and design, built as one system and kept consistent, post after post.</p>
   <div class="wg" id="wg"></div>
 </section>
 
 <section id="services">
-  <div class="lab"><span>03 Services</span><span>Next</span></div>
-  <h2 class="rv" style="margin-bottom:clamp(40px,6vw,90px)">One person for the whole of your marketing, from first idea to last post.</h2>
+  <div class="lab"><span>02 Services</span><span>Next</span></div>
+  <h2 class="rv" style="margin-bottom:clamp(22px,2.6vw,38px)">One person for the whole of your marketing, from first idea to last post.</h2>
   <div id="sv"></div>
 </section>
 
 <section id="index">
-  <div class="lab"><span>04 Index</span><span>Next</span></div>
-  <h2 class="rv" style="margin-bottom:40px">Every project, from the first post to the last flyer.</h2>
+  <div class="lab"><span>03 Index</span><span>Next</span></div>
+  <h2 class="rv" style="margin-bottom:22px">Every project, from the first post to the last flyer.</h2>
   <div id="ix"></div>
 </section>
 <img id="peek" alt="">
 
 <section id="process">
-  <div class="lab"><span>05 Process</span><span>Next</span></div>
-  <h2 class="rv" style="margin-bottom:clamp(40px,6vw,90px)">How every campaign moves from first idea to launch</h2>
+  <div class="lab"><span>04 Process</span><span>Next</span></div>
+  <h2 class="rv" style="margin-bottom:clamp(22px,2.6vw,38px)">How every campaign moves from first idea to launch</h2>
   <div class="pr" id="pr"></div>
 </section>
 
 <section id="skills">
-  <div class="lab"><span>06 Skills</span><span>Next</span></div>
-  <h2 class="rv" style="margin-bottom:clamp(40px,6vw,90px)">The skills behind every campaign.</h2>
+  <div class="lab"><span>05 Skills</span><span>Next</span></div>
+  <h2 class="rv" style="margin-bottom:clamp(22px,2.6vw,38px)">The skills behind every campaign.</h2>
   <div class="tp" id="tp"></div>
 </section>
 
 <section id="voices" hidden>
-  <div class="lab"><span>07 Testimonials</span><span>Next</span></div>
+  <div class="lab"><span>06 Testimonials</span><span>Next</span></div>
   <div class="qt" id="qt"></div><div class="dots" id="qd"></div>
 </section>
 
 <section id="together">
-  <div class="lab"><span>08 Working Together</span><span>Next</span></div>
+  <div class="lab"><span>07 Working Together</span><span>Next</span></div>
   <div class="tg"><h2 class="rv">Clear scope, honest numbers</h2><div id="jb"></div></div>
 </section>
 
 <section id="faq">
-  <div class="lab"><span>09 FAQ</span><span>Next</span></div>
+  <div class="lab"><span>08 FAQ</span><span>Next</span></div>
   <div class="tg"><h2 class="rv">Questions, answered</h2><div id="fq"></div></div>
 </section>
 
 <section id="journal">
-  <div class="lab"><span>10 Journal</span><span>Next</span></div>
-  <h2 class="rv" style="margin-bottom:clamp(40px,6vw,90px)">Notes on the decisions behind the work.</h2>
+  <div class="lab"><span>09 Journal</span><span>Next</span></div>
+  <h2 class="rv" style="margin-bottom:clamp(22px,2.6vw,38px)">Notes on the decisions behind the work.</h2>
   <div class="jg" id="jg"></div>
 </section>
 
 <section class="cta" id="contact">
   <div class="lab" style="border-color:rgba(26,16,10,.3);color:inherit"><span>Start a project</span><span>Reply within 48 hours</span></div>
-  <h2 class="rv">Have a brand to build?</h2>
+  <h2 class="rv">Your next customer is scrolling right now. Give them a reason to stop.</h2>
+  <p class="pitch">I took a bookshop from zero to 1,084 followers, with posts reaching 12.1K. Tell me what you sell, and I will show you what a clear idea, said the same way everywhere, can do for it.</p>
+  <ul class="pts"><li>One clear plan</li><li>Reports in plain words</li><li>Reply within 48 hours</li></ul>
   <div class="cg">
     <form id="inquiry-form">
       <label>Name<input name="name" required maxlength="80" autocomplete="name"></label>
@@ -358,9 +358,6 @@ let io;
 function watch(){if(!G)return;io=io||new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.15});
   $$(".rv:not(.in),.im:not(.in)").forEach(el=>io.observe(el));ScrollTrigger.refresh()}
 function setName(name){split($("#h1"),name)}
-let wt;function words(){const el=$("#bio");el.innerHTML=el.textContent.trim().split(/\s+/).map(w=>`<span class="w">${esc(w)}</span>`).join(" ");
-  if(!G)return;wt&&wt.kill();const ws=$$("#bio .w");gsap.set(ws,{opacity:.18});
-  wt=ScrollTrigger.create({trigger:el,start:"top 82%",end:"bottom 55%",scrub:true,onUpdate:s=>ws.forEach((w,i)=>w.style.opacity=.18+.82*Math.min(1,Math.max(0,s.progress*ws.length*1.15-i)))})}
 function intro(){
   const c={n:0},end=()=>{$("#pre").remove();document.body.style.overflow=""};
   if(!G){end();return}
@@ -401,7 +398,7 @@ function applyProjects(rows){
   work=work.concat(extra);renderWork();
 }
 function applyBackground(s){const i=safeUrl(s.background_image),c=/^#[0-9a-fA-F]{6}$/.test(s.background_color||"")?s.background_color:"";
-  if(i)$("#hbg").src=i;if(c)$(".hbg").style.background=c;const w=/^#[0-9a-fA-F]{6}$/.test(s.wash_color||"")?s.wash_color:"";if(w){const n=parseInt(w.slice(1),16);$(".hbg").style.setProperty("--wash",`rgba(${n>>16&255},${n>>8&255},${n&255},.35)`)}}
+  if(i){$("#hbg").src=i;$("#bgi").src=i}if(c){$(".hbg").style.background=c;$("#bgfx").style.background=c};const w=/^#[0-9a-fA-F]{6}$/.test(s.wash_color||"")?s.wash_color:"";if(w){const n=parseInt(w.slice(1),16);$(".hbg").style.setProperty("--wash",`rgba(${n>>16&255},${n>>8&255},${n&255},.35)`)}}
 async function loadContent(){
   if(!window.supabase)return;
   try{
@@ -419,7 +416,7 @@ async function loadContent(){
       pub("faqs","question,answer,position,status"),
       pub("process_steps","title,description,image_url,position,status")]);
     const p=pr.data&&pr.data[0];
-    if(!pr.error&&p&&p.status!=="draft"){if(p.name)setName(String(p.name).trim().split(" ").filter((x,i,a)=>i===0||i===a.length-1).join("\n"));if(p.tagline)$("#tag").textContent=p.tagline;if(p.title)$("#hl").textContent=p.title;if(p.bio){$("#bio").textContent=p.bio;words()}}
+    if(!pr.error&&p&&p.status!=="draft"){if(p.name)setName(String(p.name).trim().split(" ").filter((x,i,a)=>i===0||i===a.length-1).join("\n"));if(p.tagline)$("#tag").textContent=p.tagline;if(p.title)$("#hl").textContent=p.title;if(p.bio){$("#bio").textContent=p.bio}}
     if(!pj.error&&pj.data)applyProjects(pj.data);
     if(!ex.error&&ex.data&&ex.data.length){jobs=ex.data.map(r=>({when:[r.start_date,r.end_date].filter(Boolean).join(" – ")||"Dates",where:r.company||"",role:r.role||"Role",points:String(r.description||"").split(/\n+/).map(s=>s.trim()).filter(Boolean)}));renderJobs()}
     if(!sv.error&&sv.data&&sv.data.length){services=sv.data;renderServices()}
@@ -461,7 +458,7 @@ $("#inquiry-form").addEventListener("submit",async ev=>{
 
 $("#pvc").onclick=()=>sheet(`<span class="mut">Last updated October 2026</span><h2>Privacy</h2><p class="lead">This site collects as little as possible.</p><p><b>Contact form.</b> If you send an inquiry, your name, email and message are stored so Maurice can reply. They are used for nothing else and are never sold or shared for advertising. To have them deleted, email mauriceattiogbe96@gmail.com.</p><p><b>Visit counts.</b> The site counts how many visits reach each section. Nothing in these counts identifies you, and no advertising or tracking cookies are used.</p><p><b>Your browser.</b> Your light or dark choice is saved in your browser, and a short note that this visit was already counted is kept until you close the tab. Neither is sent anywhere else.</p><p><b>Hosting.</b> The site and its data are hosted with Supabase, and fonts load from Google Fonts, which can see standard connection details such as your IP address.</p>`);
 /* init */
-setName("Maurice\nAttiogbe");words();renderWork();renderServices();renderFaq();renderSkills();renderJobs();renderIdeas();renderProcess();
+setName("Maurice\nAttiogbe");renderWork();renderServices();renderFaq();renderSkills();renderJobs();renderIdeas();renderProcess();
 smooth();intro();loadContent();
 </script>
 </body>
